@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../home_screen.dart';
 import '../info_screen.dart';
 import '../login_screen.dart';
@@ -171,12 +172,12 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 const Divider(),
-                _buildDrawerItem(
-                  context,
-                  Icons.share_outlined,
-                  'Share App',
-                  () {},
-                ),
+                _buildDrawerItem(context, Icons.share_outlined, 'Share App', () {
+                  Navigator.pop(context);
+                  Share.share(
+                    'Check out this Mehndi Design app: https://play.google.com/store/apps/details?id=com.invisofts.mehndi_designs',
+                  );
+                }),
                 _buildDrawerItem(context, Icons.star_outline, 'Rate Us', () {}),
                 _buildDrawerItem(context, Icons.logout, 'Logout', () {
                   Navigator.pushAndRemoveUntil(
