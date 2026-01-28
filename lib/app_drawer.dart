@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
-import '../home_screen.dart';
+import '../main_screen.dart';
 import '../info_screen.dart';
 import '../login_screen.dart';
-import '../notifications_screen.dart';
-import '../my_account_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -83,7 +81,7 @@ class AppDrawer extends StatelessWidget {
                   // Simple check if we can pop to root, or replace
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    MaterialPageRoute(builder: (context) => const MainScreen()),
                     (route) => false,
                   );
                 }),
@@ -93,11 +91,12 @@ class AppDrawer extends StatelessWidget {
                   'My Account',
                   () {
                     Navigator.pop(context);
-                    Navigator.push(
+                    Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const MyAccountScreen(),
+                        builder: (context) => const MainScreen(initialIndex: 3),
                       ),
+                      (route) => false,
                     );
                   },
                 ),
@@ -105,13 +104,31 @@ class AppDrawer extends StatelessWidget {
                   context,
                   Icons.category_outlined,
                   'Categories',
-                  () {},
+                  () {
+                    Navigator.pop(context);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MainScreen(initialIndex: 1),
+                      ),
+                      (route) => false,
+                    );
+                  },
                 ),
                 _buildDrawerItem(
                   context,
                   Icons.favorite_outline,
                   'Favorites',
-                  () {},
+                  () {
+                    Navigator.pop(context);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MainScreen(initialIndex: 2),
+                      ),
+                      (route) => false,
+                    );
+                  },
                 ),
                 // _buildDrawerItem(context, Icons.history, 'History', () {}),
                 // _buildDrawerItem(
@@ -129,12 +146,12 @@ class AppDrawer extends StatelessWidget {
                 //   },
                 // ),
                 const Divider(height: 32),
-                _buildDrawerItem(
-                  context,
-                  Icons.settings_outlined,
-                  'Settings',
-                  () {},
-                ),
+                // _buildDrawerItem(
+                //   context,
+                //   Icons.settings_outlined,
+                //   'Settings',
+                //   () {},
+                // ),
                 _buildDrawerItem(
                   context,
                   Icons.privacy_tip_outlined,
