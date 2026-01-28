@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_drawer.dart';
+import 'services/auth_service.dart';
+import 'models/user_model.dart';
 
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
@@ -10,27 +12,38 @@ class MyAccountScreen extends StatefulWidget {
 }
 
 class _MyAccountScreenState extends State<MyAccountScreen> {
-  final TextEditingController _nameController = TextEditingController(
-    text: 'Pratiksha Singh',
-  );
-  final TextEditingController _emailController = TextEditingController(
-    text: 'pratiksha@example.com',
-  );
-  final TextEditingController _phoneController = TextEditingController(
-    text: '+91 98765 43210',
-  );
-  final TextEditingController _dobController = TextEditingController(
-    text: '2000-01-01',
-  );
-  final TextEditingController _professionController = TextEditingController(
-    text: 'Mehndi Artist',
-  );
-  final TextEditingController _addressController = TextEditingController(
-    text: 'Mumbai, India',
-  );
-  final TextEditingController _bioController = TextEditingController(
-    text: 'Passionate about mehndi designs and creating beautiful art.',
-  );
+  final _authService = AuthService();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _professionController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
+  String? _profileImageUrl;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final User? user = await _authService.getUser();
+    if (user != null) {
+      setState(() {
+        _nameController.text = user.name;
+        _emailController.text = user.email;
+        _phoneController.text = user.phone;
+        _addressController.text = user.address;
+        _profileImageUrl = user.profileImage;
+        _isLoading = false;
+      });
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
 
   String _selectedGender = 'Female';
 
@@ -66,122 +79,135 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         ],
       ),
       drawer: const AppDrawer(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            // Profile Image Section
-            Center(
-              child: Stack(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFE28127)),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFFE28127),
-                        width: 2,
-                      ),
-                    ),
-                    child: const CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.person,
-                        size: 80,
-                        color: Color(0xFFE28127),
-                      ),
+                  // Profile Image Section
+                  Center(
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFE28127),
+                              width: 2,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 60,
+                            backgroundColor: Colors.white,
+                            backgroundImage: _profileImageUrl != null
+                                ? NetworkImage(_profileImageUrl!)
+                                : null,
+                            child: _profileImageUrl == null
+                                ? const Icon(
+                                    Icons.person,
+                                    size: 80,
+                                    color: Color(0xFFE28127),
+                                  )
+                                : null,
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE28127),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFE28127),
-                        shape: BoxShape.circle,
+                  const SizedBox(height: 32),
+
+                  // Form Fields
+                  _buildTextField(
+                    'Full Name',
+                    _nameController,
+                    Icons.person_outline,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    'Email Address',
+                    _emailController,
+                    Icons.email_outlined,
+                    isReadOnly: true,
+                  ),
+
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    'Phone Number',
+                    _phoneController,
+                    Icons.phone_outlined,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildGenderDropdown(),
+                  const SizedBox(height: 20),
+                  _buildDatePicker('Date of Birth', _dobController),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    'Profession',
+                    _professionController,
+                    Icons.work_outline,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    'Address',
+                    _addressController,
+                    Icons.location_on_outlined,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    'Bio',
+                    _bioController,
+                    Icons.info_outline,
+                    maxLines: 4,
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Update Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE28127),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
                       ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 20,
+                      child: Text(
+                        'Update Profile',
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
-
-            // Form Fields
-            _buildTextField('Full Name', _nameController, Icons.person_outline),
-            const SizedBox(height: 20),
-            _buildTextField(
-              'Email Address',
-              _emailController,
-              Icons.email_outlined,
-              isReadOnly: true,
-            ),
-
-            const SizedBox(height: 20),
-            _buildTextField(
-              'Phone Number',
-              _phoneController,
-              Icons.phone_outlined,
-            ),
-            const SizedBox(height: 20),
-            _buildGenderDropdown(),
-            const SizedBox(height: 20),
-            _buildDatePicker('Date of Birth', _dobController),
-            const SizedBox(height: 20),
-            _buildTextField(
-              'Profession',
-              _professionController,
-              Icons.work_outline,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              'Address',
-              _addressController,
-              Icons.location_on_outlined,
-            ),
-            const SizedBox(height: 20),
-            _buildTextField(
-              'Bio',
-              _bioController,
-              Icons.info_outline,
-              maxLines: 4,
-            ),
-
-            const SizedBox(height: 40),
-
-            // Update Button
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE28127),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 2,
-                ),
-                child: Text(
-                  'Update Profile',
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

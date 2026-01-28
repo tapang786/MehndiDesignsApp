@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'home_screen.dart';
+import 'services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -14,8 +14,10 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _authService = AuthService();
   String? _selectedGender;
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -24,6 +26,56 @@ class _SignupScreenState extends State<SignupScreen> {
     _passwordController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignup() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final phone = _phoneController.text.trim();
+
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        phone.isEmpty ||
+        _selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final result = await _authService.register(
+      name: name,
+      email: email,
+      password: password,
+      phone: phone,
+      gender: _selectedGender!.toLowerCase(),
+    );
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+
+      if (result['status'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Redirect to Login page
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -103,6 +155,7 @@ class _SignupScreenState extends State<SignupScreen> {
               // Email Field
               TextField(
                 controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'Email',
                   hintText: 'Enter your email',
@@ -251,13 +304,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
               // Sign Up Button
               ElevatedButton(
-                onPressed: () {
-                  // Navigate to Home
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  );
-                },
+                onPressed: _isLoading ? null : _handleSignup,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE28127),
                   foregroundColor: Colors.white,
@@ -267,13 +314,22 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   elevation: 2,
                 ),
-                child: Text(
-                  'Sign Up',
-                  style: GoogleFonts.outfit(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'Sign Up',
+                        style: GoogleFonts.outfit(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
               const SizedBox(height: 32),
 

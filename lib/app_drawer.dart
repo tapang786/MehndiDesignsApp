@@ -1,12 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
-import '../main_screen.dart';
-import '../info_screen.dart';
-import '../login_screen.dart';
+import 'services/auth_service.dart';
+import 'models/user_model.dart';
+import 'main_screen.dart';
+import 'info_screen.dart';
+import 'login_screen.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
+
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  final _authService = AuthService();
+  String _userName = 'Guest';
+  String _userEmail = '';
+  String? _profileImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final User? user = await _authService.getUser();
+    if (user != null) {
+      setState(() {
+        _userName = user.name;
+        _userEmail = user.email;
+        _profileImageUrl = user.profileImage;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +43,6 @@ class AppDrawer extends StatelessWidget {
       width: MediaQuery.of(context).size.width * 0.70,
       child: Column(
         children: [
-          // User Profile Top
           // User Profile Top
           Container(
             padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
@@ -33,14 +61,19 @@ class AppDrawer extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: const CircleAvatar(
+                  child: CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.person,
-                      size: 35,
-                      color: Color(0xFFE28127),
-                    ),
+                    backgroundImage: _profileImageUrl != null
+                        ? NetworkImage(_profileImageUrl!)
+                        : null,
+                    child: _profileImageUrl == null
+                        ? const Icon(
+                            Icons.person,
+                            size: 35,
+                            color: Color(0xFFE28127),
+                          )
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -49,7 +82,7 @@ class AppDrawer extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Pratiksha Singh',
+                        _userName,
                         style: GoogleFonts.outfit(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -58,7 +91,7 @@ class AppDrawer extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '@pratiksha',
+                        _userEmail,
                         style: GoogleFonts.outfit(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.9),
@@ -196,14 +229,17 @@ class AppDrawer extends StatelessWidget {
                   );
                 }),
                 _buildDrawerItem(context, Icons.star_outline, 'Rate Us', () {}),
-                _buildDrawerItem(context, Icons.logout, 'Logout', () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                    (route) => false,
-                  );
+                _buildDrawerItem(context, Icons.logout, 'Logout', () async {
+                  await _authService.logout();
+                  if (mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
                 }, color: Colors.red),
               ],
             ),
