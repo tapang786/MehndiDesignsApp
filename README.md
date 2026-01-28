@@ -1,4 +1,4 @@
-# mehndi_designs
+# MehndiDesigns App
 
 Mehndi Designs brings you the latest collection of beautiful, easy, and stylish henna designs for every occasion.
 
