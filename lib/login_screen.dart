@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Log in to your Mehndi Design account',
+                      'Log in to your Mehndi Designs account',
                       style: GoogleFonts.outfit(
                         fontSize: 20,
                         color: Colors.grey[600],

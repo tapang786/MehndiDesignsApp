@@ -112,7 +112,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Join Mehndi Design today!',
+                      'Join Mehndi Designs today!',
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         color: Colors.grey[600],

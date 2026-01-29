@@ -225,7 +225,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 _buildDrawerItem(context, Icons.share_outlined, 'Share App', () {
                   Navigator.pop(context);
                   Share.share(
-                    'Check out this Mehndi Design app: https://play.google.com/store/apps/details?id=com.invisofts.mehndi_designs',
+                    'Check out this Mehndi Designs app: https://play.google.com/store/apps/details?id=com.invisofts.mehndi_designs',
                   );
                 }),
                 _buildDrawerItem(context, Icons.star_outline, 'Rate Us', () {}),
