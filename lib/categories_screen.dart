@@ -144,7 +144,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             ? IconButton(
                 icon: const Icon(
                   Icons.arrow_back_ios_new,
-                  color: Colors.black87,
+                  color: Colors.white,
                   size: 24,
                 ),
                 onPressed: () {

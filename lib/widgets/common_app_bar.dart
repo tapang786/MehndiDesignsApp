@@ -26,13 +26,13 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       toolbarHeight: 80,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFE28127),
       elevation: 0,
       leading:
           leading ??
           (showDrawerButton
               ? IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.black87, size: 30),
+                  icon: const Icon(Icons.menu, color: Colors.white, size: 30),
                   onPressed: () {
                     MainScreen.of(context)?.openDrawer();
                   },
@@ -42,14 +42,24 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset('assets/images/mehndi_design.png', height: 45),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    // color: Colors.white,
+                    // shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    'assets/images/mehndi_design.png',
+                    height: 50,
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Text(
                   'Mehndi Designs',
                   style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFFE28127),
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -59,11 +69,11 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
               style: GoogleFonts.outfit(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFFE28127),
+                color: Colors.white,
               ),
             ),
       centerTitle: true,
-      iconTheme: const IconThemeData(color: Colors.black87),
+      iconTheme: const IconThemeData(color: Colors.white),
       actions: [
         if (actions != null) ...actions!,
         if (showNotification)
@@ -72,18 +82,9 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Container(
               margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFE28127).withOpacity(0.1),
+                color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFFE28127).withOpacity(0.2),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFE28127).withOpacity(0.05),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -105,7 +106,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                       errorBuilder: (context, error, stackTrace) {
                         return const Icon(
                           Icons.notifications_active_outlined,
-                          color: Color(0xFFE28127),
+                          color: Colors.white,
                           size: 24,
                         );
                       },
