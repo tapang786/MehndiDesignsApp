@@ -13,21 +13,13 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.black12, width: 0.5)),
+        ),
         child: NavigationBarTheme(
           data: NavigationBarThemeData(
             indicatorColor: const Color(0xFFE28127).withOpacity(0.15),
@@ -47,7 +39,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             }),
           ),
           child: NavigationBar(
-            height: 80,
+            height: 70, // Slightly reduced height to look more standard
             backgroundColor: Colors.white,
             elevation: 0,
             selectedIndex: selectedIndex,

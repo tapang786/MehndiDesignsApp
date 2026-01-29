@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app_drawer.dart';
+import 'main_screen.dart'; // Add this import
 import 'services/auth_service.dart';
 import 'models/user_model.dart';
 
@@ -54,12 +54,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.black87, size: 30),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            );
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: Colors.black87, size: 30),
+          onPressed: () {
+            MainScreen.of(context)?.openDrawer();
           },
         ),
         title: Text(
@@ -78,7 +76,6 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      drawer: const AppDrawer(),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFE28127)),

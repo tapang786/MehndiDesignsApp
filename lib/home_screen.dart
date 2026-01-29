@@ -245,45 +245,59 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: _categories.length,
             itemBuilder: (context, index) {
               double itemWidth = (MediaQuery.of(context).size.width - 24) / 4.2;
-              return SizedBox(
-                width: itemWidth,
-                child: Column(
-                  children: [
-                    Container(
-                      width: 85,
-                      height: 85,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFFE28127),
-                          width: 2,
-                        ),
-                        image: DecorationImage(
-                          image: NetworkImage(_categories[index]['image']!),
-                          fit: BoxFit.cover,
-                          onError: (exception, stackTrace) {},
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+              return GestureDetector(
+                onTap: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MainScreen(
+                        initialIndex: 1,
+                        initialCategoryIndex: index,
+                      ),
+                    ),
+                    (route) => false,
+                  );
+                },
+                child: SizedBox(
+                  width: itemWidth,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 85,
+                        height: 85,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFE28127),
+                            width: 2,
                           ),
-                        ],
+                          image: DecorationImage(
+                            image: NetworkImage(_categories[index]['image']!),
+                            fit: BoxFit.cover,
+                            onError: (exception, stackTrace) {},
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _categories[index]['name']!,
-                      style: GoogleFonts.outfit(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(height: 8),
+                      Text(
+                        _categories[index]['name']!,
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'custom_bottom_navigation_bar.dart';
 import 'home_screen.dart';
+import 'favorites_screen.dart';
+import 'categories_screen.dart';
 import 'my_account_screen.dart';
 import 'app_drawer.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;
-  const MainScreen({super.key, this.initialIndex = 0});
+  final int? initialCategoryIndex;
+  const MainScreen({
+    super.key,
+    this.initialIndex = 0,
+    this.initialCategoryIndex,
+  });
 
   static MainScreenState? of(BuildContext context) =>
       context.findAncestorStateOfType<MainScreenState>();
@@ -29,19 +36,19 @@ class MainScreenState extends State<MainScreen> {
     _selectedIndex = widget.initialIndex;
   }
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const CategoriesPlaceholder(),
-    const FavoritesPlaceholder(),
-    const MyAccountScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _screens = [
+      const HomeScreen(),
+      CategoriesScreen(initialCategoryIndex: widget.initialCategoryIndex),
+      const FavoritesScreen(),
+      const MyAccountScreen(),
+    ];
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: const AppDrawer(),
-      extendBody: true, // Important for floating effect
+      extendBody: false, // Changed from true to false for normal navigation bar
       body: _screens[_selectedIndex],
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,
@@ -51,29 +58,6 @@ class MainScreenState extends State<MainScreen> {
           });
         },
       ),
-    );
-  }
-}
-
-// Placeholder Screens
-class CategoriesPlaceholder extends StatelessWidget {
-  const CategoriesPlaceholder({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
-      body: const Center(child: Text('Categories Screen')),
-    );
-  }
-}
-
-class FavoritesPlaceholder extends StatelessWidget {
-  const FavoritesPlaceholder({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Favorites')),
-      body: const Center(child: Text('Favorites Screen')),
     );
   }
 }
