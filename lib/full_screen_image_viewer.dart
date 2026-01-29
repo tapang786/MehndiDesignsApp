@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
-import 'notifications_screen.dart';
-import 'custom_bottom_navigation_bar.dart';
-import 'main_screen.dart';
+import 'package:mehndi_designs/widgets/common_app_bar.dart';
+import 'package:mehndi_designs/custom_bottom_navigation_bar.dart';
+import 'package:mehndi_designs/main_screen.dart';
 
 class FullScreenImageViewer extends StatefulWidget {
   final List<String> images;
@@ -66,106 +65,16 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
-      appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: Colors.white,
-        elevation: 0,
+      appBar: CommonAppBar(
+        showLogo: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 30),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 24,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset('assets/images/mehndi_design.png', height: 45),
-            const SizedBox(width: 12),
-            Text(
-              'Mehndi Designs',
-              style: GoogleFonts.outfit(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFFE28127),
-              ),
-            ),
-          ],
-        ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black87),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Container(
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE28127).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFFE28127).withOpacity(0.2),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFE28127).withOpacity(0.05),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NotificationsScreen(),
-                        ),
-                      );
-                    },
-                    icon: Lottie.network(
-                      'https://lottie.host/43f60632-6e9f-444a-9b8c-5507ad987f65/Cg2g8s73C1.json',
-                      height: 30,
-                      width: 30,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(
-                          Icons.notifications_active_outlined,
-                          color: Color(0xFFE28127),
-                          size: 24,
-                        );
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        '1',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [

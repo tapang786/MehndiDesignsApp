@@ -263,7 +263,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     final subCats =
         _categories[_selectedMainCategoryIndex]['subCategories'] as List;
     return Container(
-      height: 150,
+      height: 140,
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -284,7 +284,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(1),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
@@ -315,7 +315,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   Text(
                     subCats[index]['name'],
                     style: GoogleFonts.outfit(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: isSelected
                           ? FontWeight.bold
                           : FontWeight.w500,

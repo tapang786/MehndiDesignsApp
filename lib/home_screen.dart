@@ -158,13 +158,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     children: [
                       Container(
-                        width: 85,
-                        height: 85,
+                        width: 100,
+                        height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: const Color(0xFFE28127),
-                            width: 2,
+                            width: 2.5,
                           ),
                           image: DecorationImage(
                             image: NetworkImage(_categories[index]['image']!),

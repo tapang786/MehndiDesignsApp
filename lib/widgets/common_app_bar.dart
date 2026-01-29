@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import '../notifications_screen.dart';
-import '../main_screen.dart';
+import 'package:mehndi_designs/notifications_screen.dart';
+import 'package:mehndi_designs/main_screen.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -34,7 +34,12 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
               ? IconButton(
                   icon: const Icon(Icons.menu, color: Colors.white, size: 30),
                   onPressed: () {
-                    MainScreen.of(context)?.openDrawer();
+                    final mainScreen = MainScreen.of(context);
+                    if (mainScreen != null) {
+                      mainScreen.openDrawer();
+                    } else {
+                      Scaffold.of(context).openDrawer();
+                    }
                   },
                 )
               : null),
