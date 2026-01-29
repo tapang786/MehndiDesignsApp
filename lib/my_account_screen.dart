@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'main_screen.dart'; // Add this import
+import 'widgets/common_app_bar.dart';
 import 'services/auth_service.dart';
 import 'models/user_model.dart';
 
@@ -51,31 +51,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black87, size: 30),
-          onPressed: () {
-            MainScreen.of(context)?.openDrawer();
-          },
-        ),
-        title: Text(
-          'My Profile',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFFE28127),
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      appBar: const CommonAppBar(title: 'My Profile', showNotification: false),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFE28127)),

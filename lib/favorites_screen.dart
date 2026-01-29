@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'main_screen.dart';
-import 'full_screen_image_viewer.dart';
+import 'widgets/common_app_bar.dart';
+import 'widgets/design_card.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -22,27 +22,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
-      appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black87, size: 30),
-          onPressed: () {
-            MainScreen.of(context)?.openDrawer();
-          },
-        ),
-        title: Text(
-          'Favorites',
-          style: GoogleFonts.outfit(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFFE28127),
-          ),
-        ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
+      appBar: const CommonAppBar(title: 'Favorites'),
       body: _favoriteDesigns.isEmpty
           ? _buildEmptyState()
           : _buildFavoritesGrid(),
@@ -85,109 +65,20 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.75,
+        childAspectRatio: 0.85,
       ),
       itemCount: _favoriteDesigns.length,
       itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FullScreenImageViewer(
-                  images: _favoriteDesigns,
-                  initialIndex: index,
-                ),
-              ),
-            );
+        return DesignCard(
+          imageUrl: _favoriteDesigns[index],
+          index: index,
+          allImages: _favoriteDesigns,
+          isFavorite: true,
+          onFavoriteToggle: () {
+            setState(() {
+              _favoriteDesigns.removeAt(index);
+            });
           },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
-                    child: Stack(
-                      children: [
-                        Image.network(
-                          _favoriteDesigns[index],
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value:
-                                    loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                    : null,
-                                color: const Color(0xFFE28127),
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[200],
-                              child: const Icon(
-                                Icons.image,
-                                color: Colors.grey,
-                              ),
-                            );
-                          },
-                        ),
-                        Positioned(
-                          top: 10,
-                          right: 10,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white.withOpacity(0.8),
-                            radius: 18,
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.favorite,
-                                color: Colors.red,
-                                size: 18,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _favoriteDesigns.removeAt(index);
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Text(
-                    'Design #${index + 1}',
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       },
     );

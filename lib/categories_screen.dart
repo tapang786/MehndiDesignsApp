@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'main_screen.dart';
-import 'full_screen_image_viewer.dart';
+import 'widgets/common_app_bar.dart';
+import 'widgets/design_card.dart';
 
 class CategoriesScreen extends StatefulWidget {
   final int? initialCategoryIndex;
@@ -136,38 +136,25 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
-      appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            isDetailsView ? Icons.arrow_back_ios_new : Icons.menu,
-            color: Colors.black87,
-            size: isDetailsView ? 24 : 30,
-          ),
-          onPressed: () {
-            if (isDetailsView) {
-              setState(() {
-                _selectedMainCategoryIndex = -1;
-                _selectedSubCategoryIndex = 0;
-              });
-            } else {
-              MainScreen.of(context)?.openDrawer();
-            }
-          },
-        ),
-        title: Text(
-          isDetailsView
-              ? _categories[_selectedMainCategoryIndex]['name']
-              : 'Categories',
-          style: GoogleFonts.outfit(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFFE28127),
-          ),
-        ),
-        centerTitle: true,
+      appBar: CommonAppBar(
+        title: isDetailsView
+            ? _categories[_selectedMainCategoryIndex]['name']
+            : 'Categories',
+        leading: isDetailsView
+            ? IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Colors.black87,
+                  size: 24,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _selectedMainCategoryIndex = -1;
+                    _selectedSubCategoryIndex = 0;
+                  });
+                },
+              )
+            : null,
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
@@ -199,12 +186,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: const Color(0xFFE28127).withOpacity(0.06),
+                  blurRadius: 10,
+                  spreadRadius: 2,
                 ),
               ],
             ),
@@ -212,33 +204,41 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(3),
+                  padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    color: Colors.white,
                     border: Border.all(
                       color: const Color(0xFFE28127),
-                      width: 1.5,
+                      width: 2.5,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFE28127).withOpacity(0.2),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                      ),
+                    ],
                   ),
                   child: CircleAvatar(
-                    radius: 40,
+                    radius: 70,
                     backgroundImage: NetworkImage(_categories[index]['image']),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Text(
                   _categories[index]['name'],
                   style: GoogleFonts.outfit(
-                    fontSize: 18,
+                    fontSize: 21,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${_categories[index]['subCategories'].length} Sub-categories',
-                  style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey),
-                ),
+                // const SizedBox(height: 4),
+                // Text(
+                //   '${_categories[index]['subCategories'].length} Sub-categories',
+                //   style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey),
+                // ),
               ],
             ),
           ),
@@ -263,7 +263,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     final subCats =
         _categories[_selectedMainCategoryIndex]['subCategories'] as List;
     return Container(
-      height: 130,
+      height: 150,
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -278,7 +278,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               });
             },
             child: Container(
-              width: 90,
+              width: 100,
               margin: const EdgeInsets.only(right: 16),
               child: Column(
                 children: [
@@ -304,8 +304,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         borderRadius: BorderRadius.circular(40),
                         child: Image.network(
                           subCats[index]['image'],
-                          width: 60,
-                          height: 60,
+                          width: 80,
+                          height: 80,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -352,72 +352,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.75,
+        childAspectRatio: 0.85,
       ),
       itemCount: currentDesigns.length,
       itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FullScreenImageViewer(
-                  images: currentDesigns,
-                  initialIndex: index,
-                ),
-              ),
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
-                    child: Image.network(
-                      currentDesigns[index],
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Design #${index + 1}',
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const Icon(
-                        Icons.favorite_border,
-                        size: 20,
-                        color: Colors.red,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        return DesignCard(
+          imageUrl: currentDesigns[index],
+          index: index,
+          allImages: currentDesigns,
         );
       },
     );
