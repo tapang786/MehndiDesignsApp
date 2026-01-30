@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../models/dashboard_model.dart';
 
 class AuthService {
   static const String baseUrl = "https://md-panel.invisofts.in";
+  static final ValueNotifier<User?> userNotifier = ValueNotifier<User?>(null);
 
   Future<DashboardData?> getDashboardData() async {
     try {
@@ -61,11 +63,10 @@ class AuthService {
         await prefs.setString('auth_token', data['auth_token']);
         await prefs.setString('user_data', json.encode(data['data']['user']));
 
-        return {
-          'status': true,
-          'message': data['message'],
-          'user': User.fromJson(data['data']['user']),
-        };
+        final user = User.fromJson(data['data']['user']);
+        userNotifier.value = user;
+
+        return {'status': true, 'message': data['message'], 'user': user};
       } else {
         return {'status': false, 'message': data['message'] ?? "Login failed"};
       }
@@ -117,6 +118,30 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final url = "$baseUrl/api/forgot-password";
+      final body = {'email': email};
+      print("POST Request: $url");
+      print("Payload: $body");
+
+      final response = await http.post(Uri.parse(url), body: body);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      final data = json.decode(response.body);
+
+      return {
+        'status': data['status'] == true,
+        'message': data['message'] ?? "Password reset request failed",
+      };
+    } catch (e) {
+      print("Error in forgotPassword: $e");
+      return {'status': false, 'message': "An error occurred: $e"};
+    }
+  }
+
   Future<Map<String, dynamic>> updateProfile({
     required String name,
     required String email,
@@ -125,6 +150,8 @@ class AuthService {
     required String gender,
     required String bio,
     required String profession,
+    required String address,
+    required String dob,
     File? image,
   }) async {
     try {
@@ -147,6 +174,8 @@ class AuthService {
       request.fields['gender'] = gender;
       request.fields['bio'] = bio;
       request.fields['profession'] = profession;
+      request.fields['address'] = address;
+      request.fields['dob'] = dob;
 
       print("Fields: ${request.fields}");
 
@@ -170,11 +199,10 @@ class AuthService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_data', json.encode(data['data']['user']));
 
-        return {
-          'status': true,
-          'message': data['message'],
-          'user': User.fromJson(data['data']['user']),
-        };
+        final user = User.fromJson(data['data']['user']);
+        userNotifier.value = user;
+
+        return {'status': true, 'message': data['message'], 'user': user};
       } else {
         return {'status': false, 'message': data['message'] ?? "Update failed"};
       }
@@ -187,6 +215,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('user_data');
+    userNotifier.value = null;
   }
 
   Future<String?> getToken() async {
@@ -198,8 +227,11 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString('user_data');
     if (userData != null) {
-      return User.fromJson(json.decode(userData));
+      final user = User.fromJson(json.decode(userData));
+      userNotifier.value = user;
+      return user;
     }
+    userNotifier.value = null;
     return null;
   }
 

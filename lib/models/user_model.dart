@@ -11,6 +11,7 @@ class User {
   final String? bio;
   final String? profession;
   final String? gender;
+  final String? dob;
 
   User({
     required this.id,
@@ -25,6 +26,7 @@ class User {
     this.bio,
     this.profession,
     this.gender,
+    this.dob,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -35,12 +37,13 @@ class User {
       phone: json['phone'] ?? "",
       status: json['status']?.toString() ?? "0",
       address: json['address'] ?? "",
-      profileImage: json['profile_image'] ?? "",
+      profileImage: json['image'] ?? json['profile_image'] ?? "",
       roleId: json['role_id'] ?? 0,
       role: json['role'] ?? "",
       bio: json['bio'],
       profession: json['profession'],
       gender: json['gender'],
+      dob: json['dob']?.toString(),
     );
   }
 
@@ -58,6 +61,7 @@ class User {
       'bio': bio,
       'profession': profession,
       'gender': gender,
+      'dob': dob,
     };
   }
 }

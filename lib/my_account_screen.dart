@@ -53,6 +53,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         _addressController.text = user.address;
         _bioController.text = user.bio ?? "";
         _professionController.text = user.profession ?? "";
+        _dobController.text = user.dob ?? "";
         if (user.gender != null) {
           String normalizedGender =
               user.gender!.substring(0, 1).toUpperCase() +
@@ -87,6 +88,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       gender: gender.toLowerCase(),
       bio: _bioController.text,
       profession: _professionController.text,
+      address: _addressController.text,
+      dob: _dobController.text,
       image: _imageFile,
     );
 

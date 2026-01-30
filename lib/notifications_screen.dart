@@ -207,6 +207,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     width: double.infinity,
                     height: 200,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 200,
+                      width: double.infinity,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                    ),
                   ),
                 ),
               Padding(

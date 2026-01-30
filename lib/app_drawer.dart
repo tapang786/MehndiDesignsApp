@@ -44,65 +44,73 @@ class _AppDrawerState extends State<AppDrawer> {
       width: MediaQuery.of(context).size.width * 0.70,
       child: Column(
         children: [
-          // User Profile Top
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFE28127), Color(0xFFF2A154)],
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.white,
-                    backgroundImage: _profileImageUrl != null
-                        ? NetworkImage(_profileImageUrl!)
-                        : null,
-                    child: _profileImageUrl == null
-                        ? const Icon(
-                            Icons.person,
-                            size: 35,
-                            color: Color(0xFFE28127),
-                          )
-                        : null,
+          ValueListenableBuilder<User?>(
+            valueListenable: AuthService.userNotifier,
+            builder: (context, user, child) {
+              final String name = user?.name ?? _userName;
+              final String email = user?.email ?? _userEmail;
+              final String? imageUrl = user?.profileImage ?? _profileImageUrl;
+
+              return Container(
+                padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFE28127), Color(0xFFF2A154)],
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _userName,
-                        style: GoogleFonts.outfit(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _userEmail,
-                        style: GoogleFonts.outfit(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
+                      child: CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.white,
+                        backgroundImage: imageUrl != null && imageUrl.isNotEmpty
+                            ? NetworkImage(imageUrl)
+                            : null,
+                        child: imageUrl == null || imageUrl.isEmpty
+                            ? const Icon(
+                                Icons.person,
+                                size: 35,
+                                color: Color(0xFFE28127),
+                              )
+                            : null,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: GoogleFonts.outfit(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            email,
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
 
           Expanded(
