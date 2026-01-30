@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'widgets/common_app_bar.dart';
-import 'widgets/design_card.dart';
+import 'services/auth_service.dart';
+import 'models/dashboard_model.dart';
 
 class CategoriesScreen extends StatefulWidget {
   final int? initialCategoryIndex;
@@ -12,156 +13,69 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  int _selectedMainCategoryIndex = -1;
-  int _selectedSubCategoryIndex = 0;
+  final AuthService _authService = AuthService();
+  List<CategoryModel> _apiCategories = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    if (widget.initialCategoryIndex != null) {
-      _selectedMainCategoryIndex = widget.initialCategoryIndex!;
+    _fetchCategories();
+  }
+
+  Future<void> _fetchCategories() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final categories = await _authService.getCategoriesList();
+      setState(() {
+        _apiCategories = categories;
+        _isLoading = false;
+        if (categories.isEmpty) {
+          _errorMessage = "No categories found.";
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = "Failed to load categories. Please try again.";
+      });
     }
   }
 
-  final List<Map<String, dynamic>> _categories = [
-    {
-      'name': 'Arabic',
-      'image':
-          'https://blog.shaadivyah.com/wp-content/uploads/2024/12/Mandala-at-the-centre.png',
-      'subCategories': [
-        {
-          'name': 'Front Hand',
-          'image':
-              'https://blog.shaadivyah.com/wp-content/uploads/2024/12/Mandala-at-the-centre.png',
-          'designs': [
-            'https://blog.shaadivyah.com/wp-content/uploads/2024/12/Mandala-at-the-centre.png',
-            'https://piyushbridalmehendi.in/wp-content/uploads/2024/06/henna-design-mixed-opt1200w-1024x696.jpg',
-          ],
-        },
-        {
-          'name': 'Back Hand',
-          'image':
-              'https://img.freepik.com/free-photo/beautiful-mehndi-tattoo-woman-hand_23-2148080083.jpg',
-          'designs': [
-            'https://img.freepik.com/free-photo/beautiful-mehndi-tattoo-woman-hand_23-2148080083.jpg',
-            'https://i.pinimg.com/736x/2e/81/d4/2e81d4cb2453936a93508c2b949c290b.jpg',
-          ],
-        },
-        {
-          'name': 'Finger',
-          'image':
-              'https://i.pinimg.com/736x/2e/81/d4/2e81d4cb2453936a93508c2b949c290b.jpg',
-          'designs': [
-            'https://i.pinimg.com/736x/2e/81/d4/2e81d4cb2453936a93508c2b949c290b.jpg',
-          ],
-        },
-      ],
-    },
-    {
-      'name': 'Bridal',
-      'image':
-          'https://image.wedmegood.com/resized-nw/700X/wp-content/uploads/2019/03/rose2.jpg',
-      'subCategories': [
-        {
-          'name': 'Heavy Bridal',
-          'image':
-              'https://image.wedmegood.com/resized-nw/700X/wp-content/uploads/2019/03/rose2.jpg',
-          'designs': [
-            'https://image.wedmegood.com/resized-nw/700X/wp-content/uploads/2019/03/rose2.jpg',
-            'https://www.thesparklingwedding.com/wp-content/uploads/2024/09/cover_02.jpg',
-          ],
-        },
-        {
-          'name': 'Simple Bridal',
-          'image':
-              'https://www.triund-trek.com/uploads/blog/mehndi-hands-girl.jpg',
-          'designs': [
-            'https://www.triund-trek.com/uploads/blog/mehndi-hands-girl.jpg',
-          ],
-        },
-      ],
-    },
-    {
-      'name': 'Simple',
-      'image':
-          'https://cdn0.weddingwire.in/article/6495/original/1280/jpeg/125946-henna-designs-aj-mehandi-creation.jpeg',
-      'subCategories': [
-        {
-          'name': 'Minimalist',
-          'image':
-              'https://cdn0.weddingwire.in/article/6495/original/1280/jpeg/125946-henna-designs-aj-mehandi-creation.jpeg',
-          'designs': [
-            'https://cdn0.weddingwire.in/article/6495/original/1280/jpeg/125946-henna-designs-aj-mehandi-creation.jpeg',
-            'https://img.freepik.com/premium-photo/woman-with-henna-her-hand_1001890-1697.jpg',
-          ],
-        },
-      ],
-    },
-    {
-      'name': 'Indian',
-      'image':
-          'https://static.wixstatic.com/media/f969bb_dea3dded6bb449f29569f6becbadcff7~mv2.png',
-      'subCategories': [
-        {
-          'name': 'Traditional',
-          'image':
-              'https://static.wixstatic.com/media/f969bb_dea3dded6bb449f29569f6becbadcff7~mv2.png',
-          'designs': [
-            'https://static.wixstatic.com/media/f969bb_dea3dded6bb449f29569f6becbadcff7~mv2.png',
-            'https://www.shaadidukaan.com/vogue/wp-content/uploads/2025/03/lotus-mehndi-design-2.webp',
-          ],
-        },
-      ],
-    },
-    {
-      'name': 'Moroccan',
-      'image':
-          'https://piyushbridalmehendi.in/wp-content/uploads/2024/06/Leafy-Square-Moroccan-Mehndi-Design.jpg',
-      'subCategories': [
-        {
-          'name': 'Geometric',
-          'image':
-              'https://piyushbridalmehendi.in/wp-content/uploads/2024/06/Leafy-Square-Moroccan-Mehndi-Design.jpg',
-          'designs': [
-            'https://piyushbridalmehendi.in/wp-content/uploads/2024/06/Leafy-Square-Moroccan-Mehndi-Design.jpg',
-          ],
-        },
-      ],
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
-    bool isDetailsView = _selectedMainCategoryIndex != -1;
-
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
-      appBar: CommonAppBar(
-        title: isDetailsView
-            ? _categories[_selectedMainCategoryIndex]['name']
-            : 'Categories',
-        leading: isDetailsView
-            ? IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _selectedMainCategoryIndex = -1;
-                    _selectedSubCategoryIndex = 0;
-                  });
-                },
-              )
-            : null,
-      ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
-        child: isDetailsView
-            ? _buildSubCategoryView()
-            : _buildMainCategoryGrid(),
-      ),
+      appBar: const CommonAppBar(title: 'Categories'),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFE28127)),
+            )
+          : _errorMessage != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(_errorMessage!, style: GoogleFonts.outfit(fontSize: 16)),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _fetchCategories,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE28127),
+                    ),
+                    child: const Text(
+                      "Retry",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : _buildMainCategoryGrid(),
     );
   }
 
@@ -172,16 +86,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
-        childAspectRatio: 0.9,
+        childAspectRatio: 1,
       ),
-      itemCount: _categories.length,
+      itemCount: _apiCategories.length,
       itemBuilder: (context, index) {
+        final category = _apiCategories[index];
         return GestureDetector(
           onTap: () {
-            setState(() {
-              _selectedMainCategoryIndex = index;
-              _selectedSubCategoryIndex = 0;
-            });
+            // Future: Navigate to category designs
           },
           child: Container(
             decoration: BoxDecoration(
@@ -204,7 +116,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
@@ -215,151 +127,29 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFE28127).withOpacity(0.2),
-                        blurRadius: 15,
+                        blurRadius: 12,
                         spreadRadius: 2,
                       ),
                     ],
                   ),
                   child: CircleAvatar(
                     radius: 70,
-                    backgroundImage: NetworkImage(_categories[index]['image']),
+                    backgroundImage: NetworkImage(category.image),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Text(
-                  _categories[index]['name'],
+                  category.name,
                   style: GoogleFonts.outfit(
-                    fontSize: 21,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                // const SizedBox(height: 4),
-                // Text(
-                //   '${_categories[index]['subCategories'].length} Sub-categories',
-                //   style: GoogleFonts.outfit(fontSize: 12, color: Colors.grey),
-                // ),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSubCategoryView() {
-    return Column(
-      key: ValueKey(_selectedMainCategoryIndex),
-      children: [
-        const SizedBox(height: 10),
-        _buildSubCategorySlider(),
-        const SizedBox(height: 10),
-        Expanded(child: _buildDesignsGrid()),
-      ],
-    );
-  }
-
-  Widget _buildSubCategorySlider() {
-    final subCats =
-        _categories[_selectedMainCategoryIndex]['subCategories'] as List;
-    return Container(
-      height: 140,
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: subCats.length,
-        itemBuilder: (context, index) {
-          bool isSelected = _selectedSubCategoryIndex == index;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedSubCategoryIndex = index;
-              });
-            },
-            child: Container(
-              width: 100,
-              margin: const EdgeInsets.only(right: 16),
-              child: Column(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: const EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected
-                            ? const Color(0xFFE28127)
-                            : Colors.transparent,
-                        width: 2.5,
-                      ),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-                        child: Image.network(
-                          subCats[index]['image'],
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    subCats[index]['name'],
-                    style: GoogleFonts.outfit(
-                      fontSize: 14,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.w500,
-                      color: isSelected
-                          ? const Color(0xFFE28127)
-                          : Colors.black87,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildDesignsGrid() {
-    final List<dynamic> subCats =
-        _categories[_selectedMainCategoryIndex]['subCategories'];
-    final List<String> currentDesigns = List<String>.from(
-      subCats[_selectedSubCategoryIndex]['designs'],
-    );
-
-    return GridView.builder(
-      key: ValueKey(
-        '${_selectedMainCategoryIndex}_${_selectedSubCategoryIndex}',
-      ),
-      padding: const EdgeInsets.all(20),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.85,
-      ),
-      itemCount: currentDesigns.length,
-      itemBuilder: (context, index) {
-        return DesignCard(
-          imageUrl: currentDesigns[index],
-          index: index,
-          allImages: currentDesigns,
         );
       },
     );

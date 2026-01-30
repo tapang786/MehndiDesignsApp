@@ -4,6 +4,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'main_screen.dart';
 import 'widgets/common_app_bar.dart';
 import 'widgets/design_card.dart';
+import 'services/auth_service.dart';
+import 'models/dashboard_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,68 +15,90 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<String> _sliderImages = [
-    'https://backhandmehndidesigns.in/wp-content/uploads/2025/04/Stylish-back-hand-mehndi-design.png',
-    'https://www.thesparklingwedding.com/wp-content/uploads/2024/09/cover_02.jpg',
-    'https://www.triund-trek.com/uploads/blog/mehndi-hands-girl.jpg',
-  ];
+  final AuthService _authService = AuthService();
+  DashboardData? _dashboardData;
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<Map<String, String>> _categories = [
-    {
-      'name': 'Arabic',
-      'image':
-          'https://blog.shaadivyah.com/wp-content/uploads/2024/12/Mandala-at-the-centre.png',
-    },
-    {
-      'name': 'Bridal',
-      'image':
-          'https://image.wedmegood.com/resized-nw/700X/wp-content/uploads/2019/03/rose2.jpg',
-    },
-    {
-      'name': 'Simple',
-      'image':
-          'https://cdn0.weddingwire.in/article/6495/original/1280/jpeg/125946-henna-designs-aj-mehandi-creation.jpeg',
-    },
-    {
-      'name': 'Indian',
-      'image':
-          'https://static.wixstatic.com/media/f969bb_dea3dded6bb449f29569f6becbadcff7~mv2.png',
-    },
-    {
-      'name': 'Moroccan',
-      'image':
-          'https://piyushbridalmehendi.in/wp-content/uploads/2024/06/Leafy-Square-Moroccan-Mehndi-Design.jpg',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchDashboardData();
+  }
 
-  final List<String> _latestDesigns = [
-    'https://piyushbridalmehendi.in/wp-content/uploads/2024/06/henna-design-mixed-opt1200w-1024x696.jpg',
-    'https://img.freepik.com/free-photo/beautiful-mehndi-tattoo-woman-hand_23-2148080083.jpg',
-    'https://i.pinimg.com/736x/2e/81/d4/2e81d4cb2453936a93508c2b949c290b.jpg',
-    'https://piyushbridalmehendi.in/wp-content/uploads/2024/06/Leafy-Square-Moroccan-Mehndi-Design.jpg',
-    'https://img.freepik.com/premium-photo/woman-with-henna-her-hand_1001890-1697.jpg',
-    'https://www.shaadidukaan.com/vogue/wp-content/uploads/2025/03/lotus-mehndi-design-2.webp',
-  ];
+  Future<void> _fetchDashboardData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    final data = await _authService.getDashboardData();
+    setState(() {
+      _dashboardData = data;
+      _isLoading = false;
+      if (data == null) {
+        _errorMessage = "Failed to load dashboard data. Please try again.";
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
       appBar: const CommonAppBar(showLogo: true),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            _buildTopSlider(),
-            const SizedBox(height: 24),
-            _buildCategorySection(),
-            const SizedBox(height: 24),
-            _buildLatestDesignsSection(),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFE28127)),
+            )
+          : _errorMessage != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _errorMessage!,
+                    style: GoogleFonts.outfit(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _fetchDashboardData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE28127),
+                    ),
+                    child: const Text(
+                      "Retry",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _fetchDashboardData,
+              color: const Color(0xFFE28127),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    if (_dashboardData?.banners != null &&
+                        _dashboardData!.banners.isNotEmpty)
+                      _buildTopSlider(),
+                    const SizedBox(height: 24),
+                    if (_dashboardData?.categories != null &&
+                        _dashboardData!.categories.isNotEmpty)
+                      _buildCategorySection(),
+                    const SizedBox(height: 24),
+                    if (_dashboardData?.designs != null &&
+                        _dashboardData!.designs.isNotEmpty)
+                      _buildLatestDesignsSection(),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
@@ -90,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
         autoPlayAnimationDuration: const Duration(milliseconds: 800),
         viewportFraction: 0.85,
       ),
-      items: _sliderImages.map((imageUrl) {
+      items: _dashboardData!.banners.map((banner) {
         return Builder(
           builder: (BuildContext context) {
             return Container(
@@ -98,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 image: DecorationImage(
-                  image: NetworkImage(imageUrl),
+                  image: NetworkImage(banner.image),
                   fit: BoxFit.cover,
                   onError: (exception, stackTrace) {},
                 ),
@@ -133,12 +157,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 140,
+          height: 160,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: _categories.length,
+            itemCount: _dashboardData!.categories.length,
             itemBuilder: (context, index) {
+              final category = _dashboardData!.categories[index];
               double itemWidth = (MediaQuery.of(context).size.width - 24) / 4.2;
               return GestureDetector(
                 onTap: () {
@@ -167,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 2.5,
                           ),
                           image: DecorationImage(
-                            image: NetworkImage(_categories[index]['image']!),
+                            image: NetworkImage(category.image),
                             fit: BoxFit.cover,
                             onError: (exception, stackTrace) {},
                           ),
@@ -182,13 +207,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        _categories[index]['name']!,
+                        category.name,
                         style: GoogleFonts.outfit(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                         textAlign: TextAlign.center,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -242,12 +267,14 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSpacing: 16,
             childAspectRatio: 0.85,
           ),
-          itemCount: _latestDesigns.length,
+          itemCount: _dashboardData!.designs.length,
           itemBuilder: (context, index) {
+            final design = _dashboardData!.designs[index];
             return DesignCard(
-              imageUrl: _latestDesigns[index],
+              imageUrl: design.image,
               index: index,
-              allImages: _latestDesigns,
+              allImages: _dashboardData!.designs.map((e) => e.image).toList(),
+              isFavorite: design.isFav,
             );
           },
         ),

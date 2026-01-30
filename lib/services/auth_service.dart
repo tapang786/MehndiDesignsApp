@@ -1,17 +1,57 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
+import '../models/dashboard_model.dart';
 
 class AuthService {
   static const String baseUrl = "https://md-panel.invisofts.in";
 
+  Future<DashboardData?> getDashboardData() async {
+    try {
+      final token = await getToken();
+      print("Fetching dashboard data with token: $token");
+
+      final url = "$baseUrl/api/dashboard";
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      print("POST Request: $url");
+      print("Headers: $headers");
+
+      final response = await http.post(Uri.parse(url), headers: headers);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == true) {
+          return DashboardData.fromJson(data['data']);
+        }
+      } else {
+        print("Failed to fetch dashboard: ${response.body}");
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching dashboard data: $e");
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/api/login"),
-        body: {'email': email, 'password': password},
-      );
+      final url = "$baseUrl/api/login";
+      final body = {'email': email, 'password': password};
+      print("POST Request: $url");
+      print("Payload: $body");
+
+      final response = await http.post(Uri.parse(url), body: body);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
 
       final data = json.decode(response.body);
 
@@ -42,16 +82,21 @@ class AuthService {
     required String gender,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/api/register"),
-        body: {
-          'name': name,
-          'email': email,
-          'password': password,
-          'phone': phone,
-          'gender': gender,
-        },
-      );
+      final url = "$baseUrl/api/register";
+      final body = {
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone': phone,
+        'gender': gender,
+      };
+      print("POST Request: $url");
+      print("Payload: $body");
+
+      final response = await http.post(Uri.parse(url), body: body);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
 
       final data = json.decode(response.body);
 
@@ -66,6 +111,72 @@ class AuthService {
           'status': false,
           'message': data['message'] ?? "Registration failed",
         };
+      }
+    } catch (e) {
+      return {'status': false, 'message': "An error occurred: $e"};
+    }
+  }
+
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required String gender,
+    required String bio,
+    required String profession,
+    File? image,
+  }) async {
+    try {
+      final token = await getToken();
+
+      final url = "$baseUrl/api/update-profile";
+      var request = http.MultipartRequest('POST', Uri.parse(url));
+
+      print("POST Multipart Request: $url");
+
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      });
+
+      request.fields['name'] = name;
+      request.fields['email'] = email;
+      request.fields['password'] = password;
+      request.fields['phone'] = phone;
+      request.fields['gender'] = gender;
+      request.fields['bio'] = bio;
+      request.fields['profession'] = profession;
+
+      print("Fields: ${request.fields}");
+
+      if (image != null) {
+        print("Uploading Image: ${image.path}");
+        request.files.add(
+          await http.MultipartFile.fromPath('image', image.path),
+        );
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        // Update local user data
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_data', json.encode(data['data']['user']));
+
+        return {
+          'status': true,
+          'message': data['message'],
+          'user': User.fromJson(data['data']['user']),
+        };
+      } else {
+        return {'status': false, 'message': data['message'] ?? "Update failed"};
       }
     } catch (e) {
       return {'status': false, 'message': "An error occurred: $e"};
@@ -90,5 +201,174 @@ class AuthService {
       return User.fromJson(json.decode(userData));
     }
     return null;
+  }
+
+  Future<List<CategoryModel>> getCategoriesList() async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/categories-list";
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      print("POST Request: $url");
+      print("Headers: $headers");
+
+      final response = await http.post(Uri.parse(url), headers: headers);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == true) {
+          return (data['data'] as List)
+              .map((e) => CategoryModel.fromJson(e))
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print("Error fetching categories: $e");
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getPrivacyPolicy() async {
+    try {
+      final url = "$baseUrl/api/privacy-policy";
+      print("GET Request: $url");
+
+      final response = await http.get(Uri.parse(url));
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching privacy policy: $e");
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getTermsConditions() async {
+    try {
+      final url = "$baseUrl/api/term-and-condition";
+      print("GET Request: $url");
+
+      final response = await http.get(Uri.parse(url));
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching terms and conditions: $e");
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> toggleFavorite(int designId) async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/toggle-favorite";
+      final body = {'design_id': designId.toString()};
+
+      print("POST Request: $url");
+      print("Payload: $body");
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      print("Headers: $headers");
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      final data = json.decode(response.body);
+      return {
+        'status': data['status'] == true,
+        'message': data['message'] ?? "Action failed",
+      };
+    } catch (e) {
+      print("Error toggling favorite: $e");
+      return {'status': false, 'message': "An error occurred: $e"};
+    }
+  }
+
+  Future<List<DesignModel>> getFavorites() async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/my-favorites";
+
+      print("POST Request: $url");
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      print("Headers: $headers");
+
+      final response = await http.post(Uri.parse(url), headers: headers);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == true) {
+          return (data['data'] as List)
+              .map((e) => DesignModel.fromJson(e))
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print("Error fetching favorites: $e");
+      return [];
+    }
+  }
+
+  Future<List<NotificationModel>> getNotifications() async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/notification-list";
+
+      print("POST Request: $url");
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      print("Headers: $headers");
+
+      final response = await http.post(Uri.parse(url), headers: headers);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == true) {
+          return (data['data'] as List)
+              .map((e) => NotificationModel.fromJson(e))
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print("Error fetching notifications: $e");
+      return [];
+    }
   }
 }

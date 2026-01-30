@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'widgets/common_app_bar.dart';
 import 'services/auth_service.dart';
 import 'models/user_model.dart';
@@ -20,13 +22,25 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   final TextEditingController _professionController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   String? _profileImageUrl;
+  File? _imageFile;
   bool _isLoading = true;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _imageFile = File(image.path);
+      });
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -37,6 +51,16 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         _emailController.text = user.email;
         _phoneController.text = user.phone;
         _addressController.text = user.address;
+        _bioController.text = user.bio ?? "";
+        _professionController.text = user.profession ?? "";
+        if (user.gender != null) {
+          String normalizedGender =
+              user.gender!.substring(0, 1).toUpperCase() +
+              user.gender!.substring(1).toLowerCase();
+          if (['Male', 'Female', 'Other'].contains(normalizedGender)) {
+            gender = normalizedGender;
+          }
+        }
         _profileImageUrl = user.profileImage;
         _isLoading = false;
       });
@@ -45,7 +69,45 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     }
   }
 
-  String _selectedGender = 'Female';
+  Future<void> _updateProfile() async {
+    if (_nameController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Name cannot be empty")));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final result = await _authService.updateProfile(
+      name: _nameController.text,
+      email: _emailController.text,
+      password: _passwordController.text,
+      phone: _phoneController.text,
+      gender: gender.toLowerCase(),
+      bio: _bioController.text,
+      profession: _professionController.text,
+      image: _imageFile,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (result['status'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.green,
+        ),
+      );
+      _loadUserData();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message']), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  String gender = 'Female';
 
   @override
   Widget build(BuildContext context) {
@@ -62,49 +124,57 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 children: [
                   // Profile Image Section
                   Center(
-                    child: Stack(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFFE28127),
-                              width: 2,
-                            ),
-                          ),
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundColor: Colors.white,
-                            backgroundImage: _profileImageUrl != null
-                                ? NetworkImage(_profileImageUrl!)
-                                : null,
-                            child: _profileImageUrl == null
-                                ? const Icon(
-                                    Icons.person,
-                                    size: 80,
-                                    color: Color(0xFFE28127),
-                                  )
-                                : null,
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFE28127),
+                    child: InkWell(
+                      onTap: _pickImage,
+                      borderRadius: BorderRadius.circular(60),
+                      child: Stack(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFE28127),
+                                width: 2,
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 20,
+                            child: CircleAvatar(
+                              radius: 60,
+                              backgroundColor: Colors.white,
+                              backgroundImage: _imageFile != null
+                                  ? FileImage(_imageFile!)
+                                  : (_profileImageUrl != null
+                                        ? NetworkImage(_profileImageUrl!)
+                                              as ImageProvider
+                                        : null),
+                              child:
+                                  _imageFile == null && _profileImageUrl == null
+                                  ? const Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: Color(0xFFE28127),
+                                    )
+                                  : null,
                             ),
                           ),
-                        ),
-                      ],
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE28127),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -121,6 +191,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                     _emailController,
                     Icons.email_outlined,
                     isReadOnly: true,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    'Password (Leave blank to keep current)',
+                    _passwordController,
+                    Icons.lock_outline,
+                    isPassword: true,
                   ),
 
                   const SizedBox(height: 20),
@@ -160,7 +237,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: _updateProfile,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE28127),
                         shape: RoundedRectangleBorder(
@@ -190,6 +267,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     IconData icon, {
     int maxLines = 1,
     bool isReadOnly = false,
+    bool isPassword = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,6 +291,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             controller: controller,
             maxLines: maxLines,
             readOnly: isReadOnly,
+            obscureText: isPassword,
             style: GoogleFonts.outfit(
               fontSize: 16,
               color: isReadOnly ? Colors.black54 : Colors.black87,
@@ -333,7 +412,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: _selectedGender,
+              value: gender,
               isExpanded: true,
               icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFE28127)),
               items: ['Female', 'Male', 'Other']
@@ -357,7 +436,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
-                    _selectedGender = value;
+                    gender = value;
                   });
                 }
               },

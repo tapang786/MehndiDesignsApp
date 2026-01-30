@@ -8,6 +8,9 @@ class User {
   final String profileImage;
   final int roleId;
   final String role;
+  final String? bio;
+  final String? profession;
+  final String? gender;
 
   User({
     required this.id,
@@ -19,19 +22,25 @@ class User {
     required this.profileImage,
     required this.roleId,
     required this.role,
+    this.bio,
+    this.profession,
+    this.gender,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
-      phone: json['phone'],
-      status: json['status'],
+      id: json['id'] ?? 0,
+      name: json['name'] ?? "",
+      email: json['email'] ?? "",
+      phone: json['phone'] ?? "",
+      status: json['status']?.toString() ?? "0",
       address: json['address'] ?? "",
-      profileImage: json['profile_image'],
-      roleId: json['role_id'],
-      role: json['role'],
+      profileImage: json['profile_image'] ?? "",
+      roleId: json['role_id'] ?? 0,
+      role: json['role'] ?? "",
+      bio: json['bio'],
+      profession: json['profession'],
+      gender: json['gender'],
     );
   }
 
@@ -46,6 +55,9 @@ class User {
       'profile_image': profileImage,
       'role_id': roleId,
       'role': role,
+      'bio': bio,
+      'profession': profession,
+      'gender': gender,
     };
   }
 }

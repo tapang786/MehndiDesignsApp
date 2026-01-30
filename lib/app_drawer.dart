@@ -4,7 +4,8 @@ import 'package:share_plus/share_plus.dart';
 import 'services/auth_service.dart';
 import 'models/user_model.dart';
 import 'main_screen.dart';
-import 'info_screen.dart';
+import 'pages/privacy_policy_screen.dart';
+import 'pages/terms_conditions_screen.dart';
 import 'login_screen.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -194,11 +195,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const InfoScreen(
-                          title: 'Privacy Policy',
-                          content:
-                              'This is the privacy policy content. We respect your privacy and are committed to protecting your personal data...',
-                        ),
+                        builder: (context) => const PrivacyPolicyScreen(),
                       ),
                     );
                   },
@@ -212,11 +209,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const InfoScreen(
-                          title: 'Terms & Conditions',
-                          content:
-                              'These are the terms and conditions. By using this app, you agree to comply with and be bound by the following terms...',
-                        ),
+                        builder: (context) => const TermsConditionsScreen(),
                       ),
                     );
                   },

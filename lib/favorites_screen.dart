@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'services/auth_service.dart';
+import 'models/dashboard_model.dart';
 import 'widgets/common_app_bar.dart';
 import 'widgets/design_card.dart';
 
@@ -11,21 +13,64 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  // Dummy data for favorites
-  final List<String> _favoriteDesigns = [
-    'https://piyushbridalmehendi.in/wp-content/uploads/2024/06/henna-design-mixed-opt1200w-1024x696.jpg',
-    'https://img.freepik.com/free-photo/beautiful-mehndi-tattoo-woman-hand_23-2148080083.jpg',
-    'https://i.pinimg.com/736x/2e/81/d4/2e81d4cb2453936a93508c2b949c290b.jpg',
-  ];
+  final AuthService _authService = AuthService();
+  List<DesignModel> _favoriteDesigns = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFavorites();
+  }
+
+  Future<void> _fetchFavorites() async {
+    setState(() => _isLoading = true);
+    try {
+      final favorites = await _authService.getFavorites();
+      setState(() {
+        _favoriteDesigns = favorites;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error in FavoritesScreen: $e");
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _toggleFavorite(DesignModel design) async {
+    // Optimistic UI update: remove from list immediately
+    setState(() {
+      _favoriteDesigns.removeWhere((item) => item.id == design.id);
+    });
+
+    final result = await _authService.toggleFavorite(design.id);
+    if (result['status'] == false) {
+      // Revert if API failed
+      _fetchFavorites();
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result['message'])));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
       appBar: const CommonAppBar(title: 'Favorites'),
-      body: _favoriteDesigns.isEmpty
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFE28127)),
+            )
+          : _favoriteDesigns.isEmpty
           ? _buildEmptyState()
-          : _buildFavoritesGrid(),
+          : RefreshIndicator(
+              onRefresh: _fetchFavorites,
+              color: const Color(0xFFE28127),
+              child: _buildFavoritesGrid(),
+            ),
     );
   }
 
@@ -59,8 +104,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildFavoritesGrid() {
+    final List<String> imageUrls = _favoriteDesigns
+        .map((d) => d.image)
+        .toList();
+
     return GridView.builder(
       padding: const EdgeInsets.all(20),
+      physics: const AlwaysScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16,
@@ -69,16 +119,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ),
       itemCount: _favoriteDesigns.length,
       itemBuilder: (context, index) {
+        final design = _favoriteDesigns[index];
         return DesignCard(
-          imageUrl: _favoriteDesigns[index],
+          imageUrl: design.image,
           index: index,
-          allImages: _favoriteDesigns,
+          allImages: imageUrls,
           isFavorite: true,
-          onFavoriteToggle: () {
-            setState(() {
-              _favoriteDesigns.removeAt(index);
-            });
-          },
+          onFavoriteToggle: () => _toggleFavorite(design),
         );
       },
     );
