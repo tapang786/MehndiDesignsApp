@@ -38,7 +38,7 @@ class MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _screens = [
+    final List<Widget> screens = [
       const HomeScreen(),
       CategoriesScreen(initialCategoryIndex: widget.initialCategoryIndex),
       const FavoritesScreen(),
@@ -59,7 +59,7 @@ class MainScreenState extends State<MainScreen> {
         key: _scaffoldKey,
         drawer: const AppDrawer(),
         extendBody: false,
-        body: _screens[_selectedIndex],
+        body: screens[_selectedIndex],
         bottomNavigationBar: CustomBottomNavigationBar(
           selectedIndex: _selectedIndex,
           onDestinationSelected: (index) {

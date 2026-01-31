@@ -134,6 +134,7 @@ class NotificationModel {
   final String message;
   final String? image;
   final String date;
+  final bool isRead;
 
   NotificationModel({
     required this.id,
@@ -141,6 +142,7 @@ class NotificationModel {
     required this.message,
     this.image,
     required this.date,
+    required this.isRead,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
@@ -150,6 +152,10 @@ class NotificationModel {
       message: json['message']?.toString() ?? "",
       image: json['image']?.toString(),
       date: json['date']?.toString() ?? "",
+      isRead:
+          json['is_read'] == true ||
+          json['is_read'].toString() == "1" ||
+          json['is_read'].toString() == "true",
     );
   }
 }

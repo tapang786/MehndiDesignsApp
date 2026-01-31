@@ -299,7 +299,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
               // Gender Selection Field
               DropdownButtonFormField<String>(
-                value: _selectedGender,
+                initialValue: _selectedGender,
                 items: ['Male', 'Female', 'Other']
                     .map(
                       (gender) => DropdownMenuItem(

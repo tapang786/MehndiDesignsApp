@@ -105,13 +105,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: notification.isRead ? Colors.grey[50] : Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: notification.isRead
+              ? Border.all(color: Colors.grey[200]!)
+              : Border.all(color: const Color(0xFFE28127).withOpacity(0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -123,12 +126,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE28127).withOpacity(0.1),
+                    color: notification.isRead
+                        ? Colors.grey[200]
+                        : const Color(0xFFE28127).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.notifications_active,
-                    color: Color(0xFFE28127),
+                  child: Icon(
+                    notification.isRead
+                        ? Icons.notifications_none
+                        : Icons.notifications_active,
+                    color: notification.isRead
+                        ? Colors.grey[500]
+                        : const Color(0xFFE28127),
                     size: 20,
                   ),
                 ),
@@ -137,12 +146,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        notification.title,
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              notification.title,
+                              style: GoogleFonts.outfit(
+                                fontSize: 16,
+                                fontWeight: notification.isRead
+                                    ? FontWeight.w500
+                                    : FontWeight.bold,
+                                color: notification.isRead
+                                    ? Colors.grey[600]
+                                    : Colors.black87,
+                              ),
+                            ),
+                          ),
+                          if (!notification.isRead)
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE28127),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                        ],
                       ),
                       Text(
                         notification.date,
@@ -163,22 +192,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.outfit(
                 fontSize: 14,
-                color: Colors.grey[700],
+                color: notification.isRead
+                    ? Colors.grey[500]
+                    : Colors.grey[700],
                 height: 1.4,
               ),
             ),
             if (notification.image != null && notification.image!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    notification.image!,
-                    width: double.infinity,
-                    height: 180,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const SizedBox(),
+                child: Opacity(
+                  opacity: notification.isRead ? 0.7 : 1.0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      notification.image!,
+                      width: double.infinity,
+                      height: 180,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox(),
+                    ),
                   ),
                 ),
               ),
@@ -188,7 +222,31 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
+  void _markAsRead(NotificationModel notification) async {
+    if (notification.isRead) return;
+
+    final result = await _authService.readNotification(notification.id);
+    if (result['status'] == true) {
+      if (mounted) {
+        setState(() {
+          final index = _notifications.indexOf(notification);
+          if (index != -1) {
+            _notifications[index] = NotificationModel(
+              id: notification.id,
+              title: notification.title,
+              message: notification.message,
+              image: notification.image,
+              date: notification.date,
+              isRead: true,
+            );
+          }
+        });
+      }
+    }
+  }
+
   void _showNotificationDetails(NotificationModel notification) {
+    _markAsRead(notification);
     showDialog(
       context: context,
       builder: (context) => Dialog(

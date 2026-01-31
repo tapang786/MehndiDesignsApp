@@ -542,4 +542,38 @@ class AuthService {
       return [];
     }
   }
+
+  Future<Map<String, dynamic>> readNotification(int notificationId) async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/read-notification";
+      final body = {'notification_id': notificationId.toString()};
+
+      print("POST Request: $url");
+      print("Payload: $body");
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      print("Headers: $headers");
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      final data = json.decode(response.body);
+      return {
+        'status': data['status'] == true,
+        'message': data['message'] ?? "Action failed",
+      };
+    } catch (e) {
+      print("Error marking notification as read: $e");
+      return {'status': false, 'message': "An error occurred: $e"};
+    }
+  }
 }

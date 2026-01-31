@@ -21,6 +21,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -29,7 +30,7 @@ android {
 
     defaultConfig {
         applicationId = "com.invisofts.mehndi_designs"
-        minSdk = flutter.minSdkVersion
+        minSdk = flutter.minSdkVersion // Set minSdk explicitly or ensure flutter.minSdkVersion is at least 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -49,6 +50,10 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
 
 flutter {

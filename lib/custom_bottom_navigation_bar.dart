@@ -24,15 +24,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
           data: NavigationBarThemeData(
             indicatorColor: const Color(0xFFE28127).withOpacity(0.15),
             indicatorShape: const CircleBorder(),
-            labelTextStyle: MaterialStateProperty.all(
+            labelTextStyle: WidgetStateProperty.all(
               GoogleFonts.outfit(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
               ),
             ),
-            iconTheme: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
+            iconTheme: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
                 return const IconThemeData(color: Color(0xFFE28127));
               }
               return const IconThemeData(color: Colors.grey);
