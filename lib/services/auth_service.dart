@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../models/dashboard_model.dart';
+import 'notification_service.dart';
 
 class AuthService {
   static const String baseUrl = "https://md-panel.invisofts.in";
@@ -49,8 +50,13 @@ class AuthService {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
+      final fcmToken = await NotificationService.getFCMToken();
       final url = "$baseUrl/api/login";
-      final body = {'email': email, 'password': password};
+      final body = {
+        'email': email,
+        'password': password,
+        'fcm_token': fcmToken ?? 'device_token_not_found',
+      };
       print("POST Request: $url");
       print("Payload: $body");
 
@@ -115,6 +121,54 @@ class AuthService {
         return {
           'status': false,
           'message': data['message'] ?? "Registration failed",
+        };
+      }
+    } catch (e) {
+      return {'status': false, 'message': "An error occurred: $e"};
+    }
+  }
+
+  Future<Map<String, dynamic>> socialLogin({
+    required String provider,
+    required String providerId,
+    required String email,
+    required String name,
+    String? image,
+  }) async {
+    try {
+      final fcmToken = await NotificationService.getFCMToken();
+      final url = "$baseUrl/api/social-login";
+      final body = {
+        'provider': provider,
+        'provider_id': providerId,
+        'email': email,
+        'name': name,
+        'image': image ?? "",
+        'fcm_token': fcmToken ?? 'device_token_not_found',
+      };
+      print("POST Request: $url");
+      print("Payload: $body");
+
+      final response = await http.post(Uri.parse(url), body: body);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', data['auth_token']);
+        await prefs.setString('user_data', json.encode(data['data']['user']));
+
+        final user = User.fromJson(data['data']['user']);
+        userNotifier.value = user;
+
+        return {'status': true, 'message': data['message'], 'user': user};
+      } else {
+        return {
+          'status': false,
+          'message': data['message'] ?? "Social login failed",
         };
       }
     } catch (e) {

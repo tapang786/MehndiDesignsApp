@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "560157774098",
+    "project_id": "mehndidesigns-d2508",
+    "storage_bucket": "mehndidesigns-d2508.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:560157774098:android:24e095f8f57fb2d421a3cb",
+        "android_client_info": {
+          "package_name": "com.invisofts.mehndi_designs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "560157774098-647tb7k2ouk2b08okbe5a7jrg9glrej9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6rBo4CkGpWRniWI9VjM4yYaumPz2fAB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "560157774098-647tb7k2ouk2b08okbe5a7jrg9glrej9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

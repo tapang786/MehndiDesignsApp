@@ -4,6 +4,8 @@ import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
 import 'main_screen.dart';
 import 'services/auth_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -60,6 +62,86 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final googleSignIn = GoogleSignIn();
+      final user = await googleSignIn.signIn();
+
+      if (user != null) {
+        final result = await _authService.socialLogin(
+          provider: 'google',
+          providerId: user.id,
+          email: user.email,
+          name: user.displayName ?? '',
+          image: user.photoUrl,
+        );
+
+        if (mounted) {
+          if (result['status'] == true) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+            );
+          } else {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(result['message'])));
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Google Sign-In failed: $e")));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleAppleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final result = await _authService.socialLogin(
+        provider: 'apple',
+        providerId: credential.userIdentifier ?? '',
+        email: credential.email ?? '',
+        name: '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
+            .trim(),
+      );
+
+      if (mounted) {
+        if (result['status'] == true) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(result['message'])));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Apple Sign-In failed: $e")));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -269,7 +351,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     label: 'Google',
-                    onPressed: () {},
+                    onPressed: _handleGoogleLogin,
                   ),
                   const SizedBox(width: 16),
                   _buildSocialButton(
@@ -279,7 +361,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.black,
                     ),
                     label: 'Apple',
-                    onPressed: () {},
+                    onPressed: _handleAppleLogin,
                   ),
                 ],
               ),
