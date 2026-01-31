@@ -44,8 +44,24 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final User? user = await _authService.getUser();
+    // First try to load from local storage for immediate UI update
+    final localUser = await _authService.getUser();
+    if (localUser != null) {
+      _updateFields(localUser);
+    }
+
+    // Then fetch fresh data from API
+    final User? user = await _authService.getProfile();
     if (user != null) {
+      _updateFields(user);
+    }
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _updateFields(User user) {
+    if (mounted) {
       setState(() {
         _nameController.text = user.name;
         _emailController.text = user.email;
@@ -54,7 +70,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         _bioController.text = user.bio ?? "";
         _professionController.text = user.profession ?? "";
         _dobController.text = user.dob ?? "";
-        if (user.gender != null) {
+        if (user.gender != null && user.gender!.isNotEmpty) {
           String normalizedGender =
               user.gender!.substring(0, 1).toUpperCase() +
               user.gender!.substring(1).toLowerCase();
@@ -63,10 +79,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           }
         }
         _profileImageUrl = user.profileImage;
-        _isLoading = false;
       });
-    } else {
-      setState(() => _isLoading = false);
     }
   }
 
@@ -110,7 +123,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     }
   }
 
-  String gender = 'Female';
+  String gender = 'Gender';
 
   @override
   Widget build(BuildContext context) {
@@ -418,7 +431,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               value: gender,
               isExpanded: true,
               icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFE28127)),
-              items: ['Female', 'Male', 'Other']
+              items: ['Gender', 'Female', 'Male', 'Other']
                   .map(
                     (gender) => DropdownMenuItem(
                       value: gender,
