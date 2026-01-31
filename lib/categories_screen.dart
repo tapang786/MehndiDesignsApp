@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'widgets/common_app_bar.dart';
 import 'services/auth_service.dart';
 import 'models/dashboard_model.dart';
+import 'widgets/design_card.dart';
 
 class CategoriesScreen extends StatefulWidget {
   final int? initialCategoryIndex;
@@ -15,7 +16,12 @@ class CategoriesScreen extends StatefulWidget {
 class _CategoriesScreenState extends State<CategoriesScreen> {
   final AuthService _authService = AuthService();
   List<CategoryModel> _apiCategories = [];
+  CategoryModel? _selectedCategory;
+  List<SubCategoryModel> _subCategories = [];
+  SubCategoryModel? _selectedSubCategory;
+  List<DesignModel> _designs = [];
   bool _isLoading = true;
+  bool _isSubLoading = false;
   String? _errorMessage;
 
   @override
@@ -38,6 +44,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           _errorMessage = "No categories found.";
         }
       });
+
+      // If initialCategoryIndex is provided, auto-select it
+      if (widget.initialCategoryIndex != null &&
+          widget.initialCategoryIndex! < categories.length) {
+        _onCategoryTap(categories[widget.initialCategoryIndex!]);
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -46,37 +58,250 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     }
   }
 
+  Future<void> _onCategoryTap(CategoryModel category) async {
+    setState(() {
+      _selectedCategory = category;
+      _subCategories = [];
+      _selectedSubCategory = null;
+      _designs = [];
+      _isSubLoading = true;
+    });
+
+    try {
+      final subs = await _authService.getSubCategoriesList(category.id);
+      setState(() {
+        _subCategories = subs;
+        if (subs.isNotEmpty) {
+          _selectedSubCategory = subs.first;
+          _fetchDesigns();
+        } else {
+          _isSubLoading = false;
+        }
+      });
+    } catch (e) {
+      setState(() => _isSubLoading = false);
+    }
+  }
+
+  Future<void> _fetchDesigns() async {
+    if (_selectedSubCategory == null) return;
+
+    setState(() => _isSubLoading = true);
+    try {
+      final designs = await _authService.getDesignsList(
+        subCategoryId: _selectedSubCategory!.id,
+      );
+      setState(() {
+        _designs = designs;
+        _isSubLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isSubLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
-      appBar: const CommonAppBar(title: 'Categories'),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFE28127)),
-            )
-          : _errorMessage != null
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(_errorMessage!, style: GoogleFonts.outfit(fontSize: 16)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _fetchCategories,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE28127),
-                    ),
-                    child: const Text(
-                      "Retry",
-                      style: TextStyle(color: Colors.white),
+    return PopScope(
+      canPop: _selectedCategory == null,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        if (_selectedCategory != null) {
+          setState(() {
+            _selectedCategory = null;
+            _subCategories = [];
+            _selectedSubCategory = null;
+            _designs = [];
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFDFDFD),
+        appBar: CommonAppBar(
+          title: _selectedCategory?.name ?? 'Categories',
+          onBackOverride: _selectedCategory != null
+              ? () {
+                  setState(() {
+                    _selectedCategory = null;
+                    _subCategories = [];
+                    _selectedSubCategory = null;
+                    _designs = [];
+                  });
+                }
+              : null,
+        ),
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFFE28127)),
+              )
+            : _errorMessage != null
+            ? _buildErrorWidget()
+            : _selectedCategory == null
+            ? _buildMainCategoryGrid()
+            : _buildSubCategoryView(),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(_errorMessage!, style: GoogleFonts.outfit(fontSize: 16)),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _fetchCategories,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE28127),
+            ),
+            child: const Text("Retry", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubCategoryView() {
+    return Column(
+      children: [
+        // Sub-categories SlideView (Horizontal List)
+        if (_subCategories.isNotEmpty)
+          Container(
+            height: 160,
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: _subCategories.length,
+              itemBuilder: (context, index) {
+                final sub = _subCategories[index];
+                final isSelected = _selectedSubCategory?.id == sub.id;
+                double itemWidth =
+                    (MediaQuery.of(context).size.width - 24) / 4.2;
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedSubCategory = sub;
+                      _designs = [];
+                    });
+                    _fetchDesigns();
+                  },
+                  child: SizedBox(
+                    width: itemWidth,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFFE28127)
+                                  : Colors.grey[200]!,
+                              width: 2.5,
+                            ),
+                            image: DecorationImage(
+                              image: NetworkImage(sub.image),
+                              fit: BoxFit.cover,
+                              onError: (exception, stackTrace) {},
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isSelected
+                                    ? const Color(0xFFE28127).withOpacity(0.2)
+                                    : Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          sub.name,
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w600,
+                            color: isSelected
+                                ? const Color(0xFFE28127)
+                                : Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            )
-          : _buildMainCategoryGrid(),
+                );
+              },
+            ),
+          ),
+
+        // Designs Grid
+        Expanded(
+          child: _isSubLoading && _designs.isEmpty
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFE28127)),
+                )
+              : _designs.isEmpty
+              ? Center(
+                  child: Text(
+                    "No designs found in this sub-category.",
+                    style: GoogleFonts.outfit(color: Colors.grey),
+                  ),
+                )
+              : GridView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemCount: _designs.length,
+                  itemBuilder: (context, index) {
+                    final design = _designs[index];
+                    return DesignCard(
+                      imageUrl: design.image,
+                      index: index,
+                      allImages: _designs.map((e) => e.image).toList(),
+                      isFavorite: design.isFav,
+                      onFavoriteToggle: () => _toggleFavorite(design),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
+  }
+
+  Future<void> _toggleFavorite(DesignModel design) async {
+    final result = await _authService.toggleFavorite(design.id);
+    if (result['status'] == true) {
+      setState(() {
+        // Find and update the design in the list
+        final index = _designs.indexWhere((e) => e.id == design.id);
+        if (index != -1) {
+          final updatedDesign = DesignModel(
+            id: design.id,
+            title: design.title,
+            slug: design.slug,
+            image: design.image,
+            isFav: !design.isFav,
+          );
+          _designs[index] = updatedDesign;
+        }
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result['message'])));
+    }
   }
 
   Widget _buildMainCategoryGrid() {
@@ -92,9 +317,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       itemBuilder: (context, index) {
         final category = _apiCategories[index];
         return GestureDetector(
-          onTap: () {
-            // Future: Navigate to category designs
-          },
+          onTap: () => _onCategoryTap(category),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,

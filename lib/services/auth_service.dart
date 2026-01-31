@@ -9,6 +9,8 @@ import '../models/dashboard_model.dart';
 class AuthService {
   static const String baseUrl = "https://md-panel.invisofts.in";
   static final ValueNotifier<User?> userNotifier = ValueNotifier<User?>(null);
+  static final ValueNotifier<int> notificationCountNotifier =
+      ValueNotifier<int>(0);
 
   Future<DashboardData?> getDashboardData() async {
     try {
@@ -31,7 +33,9 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == true) {
-          return DashboardData.fromJson(data['data']);
+          final dashboard = DashboardData.fromJson(data['data']);
+          notificationCountNotifier.value = dashboard.notificationCount;
+          return dashboard;
         }
       } else {
         print("Failed to fetch dashboard: ${response.body}");
@@ -400,6 +404,87 @@ class AuthService {
       return [];
     } catch (e) {
       print("Error fetching notifications: $e");
+      return [];
+    }
+  }
+
+  Future<List<SubCategoryModel>> getSubCategoriesList(int categoryId) async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/sub-categories-list";
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      final body = {'category_id': categoryId.toString()};
+
+      print("POST Request: $url");
+      print("Payload: $body");
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == true) {
+          return (data['data'] as List)
+              .map((e) => SubCategoryModel.fromJson(e))
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print("Error fetching sub-categories: $e");
+      return [];
+    }
+  }
+
+  Future<List<DesignModel>> getDesignsList({
+    int? categoryId,
+    int? subCategoryId,
+  }) async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/designs-list";
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      final body = <String, String>{};
+      if (categoryId != null) body['category_id'] = categoryId.toString();
+      if (subCategoryId != null) {
+        body['sub_category_id'] = subCategoryId.toString();
+      }
+
+      print("POST Request: $url");
+      print("Payload: $body");
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == true) {
+          return (data['data'] as List)
+              .map((e) => DesignModel.fromJson(e))
+              .toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print("Error fetching designs: $e");
       return [];
     }
   }

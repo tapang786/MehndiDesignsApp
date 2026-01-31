@@ -45,18 +45,29 @@ class MainScreenState extends State<MainScreen> {
       const MyAccountScreen(),
     ];
 
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: const AppDrawer(),
-      extendBody: false, // Changed from true to false for normal navigation bar
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: CustomBottomNavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
+    return PopScope(
+      canPop: _selectedIndex == 0,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        if (_selectedIndex != 0) {
           setState(() {
-            _selectedIndex = index;
+            _selectedIndex = 0;
           });
-        },
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawer: const AppDrawer(),
+        extendBody: false,
+        body: _screens[_selectedIndex],
+        bottomNavigationBar: CustomBottomNavigationBar(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+        ),
       ),
     );
   }

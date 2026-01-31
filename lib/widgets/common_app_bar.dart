@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mehndi_designs/notifications_screen.dart';
 import 'package:mehndi_designs/main_screen.dart';
+import 'package:mehndi_designs/services/auth_service.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -11,6 +12,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showNotification;
   final List<Widget>? actions;
   final Widget? leading;
+  final VoidCallback? onBackOverride;
 
   const CommonAppBar({
     super.key,
@@ -20,6 +22,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showNotification = true,
     this.actions,
     this.leading,
+    this.onBackOverride,
   });
 
   @override
@@ -30,19 +33,31 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       leading:
           leading ??
-          (showDrawerButton
+          (onBackOverride != null
               ? IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white, size: 30),
-                  onPressed: () {
-                    final mainScreen = MainScreen.of(context);
-                    if (mainScreen != null) {
-                      mainScreen.openDrawer();
-                    } else {
-                      Scaffold.of(context).openDrawer();
-                    }
-                  },
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                  ),
+                  onPressed: onBackOverride,
                 )
-              : null),
+              : (showDrawerButton
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.menu,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          final mainScreen = MainScreen.of(context);
+                          if (mainScreen != null) {
+                            mainScreen.openDrawer();
+                          } else {
+                            Scaffold.of(context).openDrawer();
+                          }
+                        },
+                      )
+                    : null)),
       title: showLogo
           ? Row(
               mainAxisSize: MainAxisSize.min,
@@ -117,30 +132,36 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                       },
                     ),
                   ),
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        '1',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
+                  ValueListenableBuilder<int>(
+                    valueListenable: AuthService.notificationCountNotifier,
+                    builder: (context, count, child) {
+                      if (count <= 0) return const SizedBox.shrink();
+                      return Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white, width: 1.5),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            count.toString(),
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ],
               ),
