@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "560157774098-amqb5ia7238upcl2hu49h7n56c42mb8j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.invisofts.mehndi_designs",
+            "certificate_hash": "efc2532f0c89ef37822bd47640a5ce39cd86f321"
+          }
+        },
+        {
           "client_id": "560157774098-647tb7k2ouk2b08okbe5a7jrg9glrej9.apps.googleusercontent.com",
           "client_type": 3
         }

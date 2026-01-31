@@ -66,12 +66,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleGoogleLogin() async {
+    print("Google Login clicked");
     setState(() => _isLoading = true);
     try {
       final googleSignIn = GoogleSignIn();
+      print("Attempting to signIn with Google...");
       final user = await googleSignIn.signIn();
+      print("Google SignIn user: ${user?.email}");
 
       if (user != null) {
+        print("Passing data to socialLogin API...");
         final result = await _authService.socialLogin(
           provider: 'google',
           providerId: user.id,
@@ -79,21 +83,28 @@ class _LoginScreenState extends State<LoginScreen> {
           name: user.displayName ?? '',
           image: user.photoUrl,
         );
+        print("socialLogin API result: $result");
 
         if (mounted) {
           if (result['status'] == true) {
+            print("Redirecting to MainScreen...");
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const MainScreen()),
             );
           } else {
+            print("Social Login failed: ${result['message']}");
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(result['message'])));
           }
         }
+      } else {
+        print("Google Sign-In was cancelled by user");
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print("Detailed Google Sign-In error: $e");
+      print("Stack trace: $stack");
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -105,15 +116,19 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleAppleLogin() async {
+    print("Apple Login clicked");
     setState(() => _isLoading = true);
     try {
+      print("Attempting Apple Sign-In...");
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
         ],
       );
+      print("Apple credential received: ${credential.email}");
 
+      print("Passing data to socialLogin API...");
       final result = await _authService.socialLogin(
         provider: 'apple',
         providerId: credential.userIdentifier ?? '',
@@ -121,20 +136,25 @@ class _LoginScreenState extends State<LoginScreen> {
         name: '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
             .trim(),
       );
+      print("socialLogin API result: $result");
 
       if (mounted) {
         if (result['status'] == true) {
+          print("Redirecting to MainScreen...");
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const MainScreen()),
           );
         } else {
+          print("Social Login failed: ${result['message']}");
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(result['message'])));
         }
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print("Detailed Apple Sign-In error: $e");
+      print("Stack trace: $stack");
       if (mounted) {
         ScaffoldMessenger.of(
           context,

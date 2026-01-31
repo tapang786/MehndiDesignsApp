@@ -135,8 +135,11 @@ class AuthService {
     required String name,
     String? image,
   }) async {
+    print("SocialLogin started: $provider, $providerId, $email, $name");
     try {
       final fcmToken = await NotificationService.getFCMToken();
+      print("FCM Token: $fcmToken");
+
       final url = "$baseUrl/api/social-login";
       final body = {
         'provider': provider,
@@ -155,8 +158,10 @@ class AuthService {
       print("Response body: ${response.body}");
 
       final data = json.decode(response.body);
+      print("Parsed Data: $data");
 
       if (response.statusCode == 200 && data['status'] == true) {
+        print("Social Login Successful on Backend");
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', data['auth_token']);
         await prefs.setString('user_data', json.encode(data['data']['user']));
@@ -166,12 +171,15 @@ class AuthService {
 
         return {'status': true, 'message': data['message'], 'user': user};
       } else {
+        print("Social Login Failed on Backend: ${data['message']}");
         return {
           'status': false,
           'message': data['message'] ?? "Social login failed",
         };
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print("Error in socialLogin service: $e");
+      print("Stack trace: $stack");
       return {'status': false, 'message': "An error occurred: $e"};
     }
   }
