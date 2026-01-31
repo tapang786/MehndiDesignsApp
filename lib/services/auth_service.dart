@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 import '../models/dashboard_model.dart';
 import 'notification_service.dart';
@@ -277,10 +278,58 @@ class AuthService {
     }
   }
 
+  Future<User?> getProfile() async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/my-profile";
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      print("POST Request: $url");
+      print("Headers: $headers");
+
+      final response = await http.post(Uri.parse(url), headers: headers);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == true) {
+          final userData = data['data']['user'];
+          final user = User.fromJson(userData);
+
+          // Update local storage and notifier
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('user_data', json.encode(userData));
+          userNotifier.value = user;
+
+          return user;
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching profile: $e");
+      return null;
+    }
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('user_data');
+
+    // Sign out from Google to ensure account selection prompt on next login
+    try {
+      final googleSignIn = GoogleSignIn();
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+      }
+    } catch (e) {
+      print("Error signing out from Google: $e");
+    }
+
     userNotifier.value = null;
   }
 

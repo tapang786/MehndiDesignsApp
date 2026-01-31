@@ -70,6 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final googleSignIn = GoogleSignIn();
+      print("Ensuring previous session is cleared...");
+      await googleSignIn.signOut(); // Force clear to show account selector
       print("Attempting to signIn with Google...");
       final user = await googleSignIn.signIn();
       print("Google SignIn user: ${user?.email}");
