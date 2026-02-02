@@ -79,11 +79,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        toolbarHeight: screenWidth > 600 ? 80 : 56,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
           onPressed: () => Navigator.pop(context),
@@ -91,15 +95,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight * 0.02),
               Text(
                 'Forgot Password?',
                 style: GoogleFonts.outfit(
-                  fontSize: 32,
+                  fontSize: screenWidth > 600 ? 40 : 32,
                   fontWeight: FontWeight.bold,
                   color: const Color(0xFFE28127),
                 ),
@@ -108,11 +112,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               Text(
                 'Enter your email address below to receive a password reset link.',
                 style: GoogleFonts.outfit(
-                  fontSize: 18,
+                  fontSize: screenWidth > 600 ? 20 : 18,
                   color: Colors.grey[600],
                 ),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: screenHeight * 0.05),
 
               // Email Field
               TextField(
@@ -140,9 +144,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                 ),
-                style: GoogleFonts.outfit(fontSize: 18),
+                style: GoogleFonts.outfit(
+                  fontSize: screenWidth > 600 ? 18 : 16,
+                ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.04),
 
               // Reset Button
               ElevatedButton(
@@ -168,7 +174,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     : Text(
                         'Send Reset Link',
                         style: GoogleFonts.outfit(
-                          fontSize: 20,
+                          fontSize: screenWidth > 600 ? 24 : 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

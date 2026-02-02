@@ -161,26 +161,34 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         .map((d) => d.image)
         .toList();
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(20),
-      physics: const AlwaysScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.85,
-      ),
-      itemCount: _favoriteDesigns.length,
-      itemBuilder: (context, index) {
-        final design = _favoriteDesigns[index];
-        return DesignCard(
-          imageUrl: design.image,
-          title: design.title,
-          index: index,
-          allImages: imageUrls,
-          allDesigns: _favoriteDesigns,
-          isFavorite: true,
-          onFavoriteToggle: () => _toggleFavorite(design),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double screenWidth = constraints.maxWidth;
+        int crossAxisCount = screenWidth > 600 ? 3 : 2;
+        if (screenWidth > 900) crossAxisCount = 4;
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(20),
+          physics: const AlwaysScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: _favoriteDesigns.length,
+          itemBuilder: (context, index) {
+            final design = _favoriteDesigns[index];
+            return DesignCard(
+              imageUrl: design.image,
+              title: design.title,
+              index: index,
+              allImages: imageUrls,
+              allDesigns: _favoriteDesigns,
+              isFavorite: true,
+              onFavoriteToggle: () => _toggleFavorite(design),
+            );
+          },
         );
       },
     );

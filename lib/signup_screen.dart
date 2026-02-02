@@ -187,11 +187,15 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        toolbarHeight: screenWidth > 600 ? 80 : 56,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
@@ -203,32 +207,45 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Logo and App Name
-              Center(
-                child: Column(
-                  children: [
-                    Image.asset('assets/images/mehndi_design.png', height: 120),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Create Account',
-                      style: GoogleFonts.outfit(
-                        fontSize: 38,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFE28127),
-                      ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = MediaQuery.of(context).size.width;
+                  double logoHeight = screenWidth > 600 ? 150 : 100;
+                  double titleFontSize = screenWidth > 600 ? 44 : 32;
+                  double subTitleFontSize = screenWidth > 600 ? 20 : 16;
+
+                  return Center(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          'assets/images/mehndi_design.png',
+                          height: logoHeight,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Create Account',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            fontSize: titleFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFFE28127),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Join Mehndi Designs today!',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            fontSize: subTitleFontSize,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Join Mehndi Designs today!',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: screenHeight * 0.03),
 
               // Full Name Field
               TextField(
@@ -255,9 +272,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 ),
-                style: GoogleFonts.outfit(fontSize: 20),
+                style: GoogleFonts.outfit(
+                  fontSize: screenWidth > 600 ? 18 : 16,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Email Field
               TextField(
@@ -285,9 +304,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 ),
-                style: GoogleFonts.outfit(fontSize: 20),
+                style: GoogleFonts.outfit(
+                  fontSize: screenWidth > 600 ? 18 : 16,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Phone Number Field
               TextField(
@@ -315,9 +336,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 ),
-                style: GoogleFonts.outfit(fontSize: 20),
+                style: GoogleFonts.outfit(
+                  fontSize: screenWidth > 600 ? 18 : 16,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Gender Selection Field
               DropdownButtonFormField<String>(
@@ -328,7 +351,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         value: gender,
                         child: Text(
                           gender,
-                          style: GoogleFonts.outfit(fontSize: 20),
+                          style: GoogleFonts.outfit(
+                            fontSize: screenWidth > 600 ? 18 : 16,
+                          ),
                         ),
                       ),
                     )
@@ -363,8 +388,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 dropdownColor: Colors.white,
                 iconEnabledColor: const Color(0xFFE28127),
               ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Password Field
               TextField(
@@ -405,9 +429,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 ),
-                style: GoogleFonts.outfit(fontSize: 18),
+                style: GoogleFonts.outfit(
+                  fontSize: screenWidth > 600 ? 18 : 16,
+                ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.03),
 
               // Sign Up Button
               ElevatedButton(
@@ -438,7 +464,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.03),
 
               // Divider
               Row(
@@ -457,7 +483,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   const Expanded(child: Divider()),
                 ],
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.03),
 
               // Social Logins
               Row(
@@ -495,7 +521,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.03),
 
               // Back to Login
               Row(
