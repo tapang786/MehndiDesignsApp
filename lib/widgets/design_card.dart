@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../full_screen_image_viewer.dart';
 
+import '../models/dashboard_model.dart';
+
 class DesignCard extends StatelessWidget {
   final String imageUrl;
   final String title;
   final int index;
   final List<String> allImages;
+  final List<DesignModel> allDesigns; // Added this
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
 
@@ -16,6 +19,7 @@ class DesignCard extends StatelessWidget {
     required this.title,
     required this.index,
     required this.allImages,
+    required this.allDesigns, // Added this
     this.isFavorite = false,
     this.onFavoriteToggle,
   });
@@ -23,14 +27,18 @@ class DesignCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) =>
-                FullScreenImageViewer(images: allImages, initialIndex: index),
+                FullScreenImageViewer(designs: allDesigns, initialIndex: index),
           ),
         );
+        // Viewer might have changed favorite status, so we trigger a potential refresh
+        // by calling the same logic as if the heart icon was clicked if needed,
+        // but since we passed the same list, the state might already be updated
+        // if the list objects are the same.
       },
       child: Container(
         decoration: BoxDecoration(

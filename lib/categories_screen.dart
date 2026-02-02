@@ -272,6 +272,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       title: design.title,
                       index: index,
                       allImages: _designs.map((e) => e.image).toList(),
+                      allDesigns: _designs,
                       isFavorite: design.isFav,
                       onFavoriteToggle: () => _toggleFavorite(design),
                     );
@@ -284,37 +285,51 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Future<void> _toggleFavorite(DesignModel design) async {
     print("CategoriesScreen: Toggle favorite clicked for design: ${design.id}");
+
+    final bool originalIsFav = design.isFav;
+
+    // 1. Optimistic Update (Immediate UI response)
+    setState(() {
+      final index = _designs.indexWhere((e) => e.id == design.id);
+      if (index != -1) {
+        _designs[index] = DesignModel(
+          id: design.id,
+          title: design.title,
+          slug: design.slug,
+          image: design.image,
+          isFav: !originalIsFav,
+        );
+      }
+    });
+
+    // 2. API Call
     final result = await _authService.toggleFavorite(design.id);
     print(
       "CategoriesScreen: Toggle favorite result status: ${result['status']}",
     );
-    if (result['status'] == true) {
+
+    if (result['status'] == false) {
+      // 3. Rollback on failure
       setState(() {
-        // Find and update the design in the list
         final index = _designs.indexWhere((e) => e.id == design.id);
         if (index != -1) {
-          final updatedDesign = DesignModel(
-            id: design.id,
-            title: design.title,
-            slug: design.slug,
-            image: design.image,
-            isFav: !design.isFav,
-          );
-          _designs[index] = updatedDesign;
-          print(
-            "CategoriesScreen: Design ${design.id} isFav updated to: ${!design.isFav}",
-          );
+          _designs[index] = design; // Revert to original instance
         }
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(result['message'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? "Action failed")),
+        );
       }
     } else {
-      print(
-        "CategoriesScreen: Failed to toggle favorite for design ${design.id}: ${result['message']}",
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
     }
   }
 

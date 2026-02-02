@@ -640,4 +640,82 @@ class AuthService {
       return {'status': false, 'message': "An error occurred: $e"};
     }
   }
+
+  Future<Map<String, dynamic>> deleteAccount() async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/delete-account";
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+
+      print("POST Request (Delete Account): $url");
+      final response = await http.post(Uri.parse(url), headers: headers);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      final data = json.decode(response.body);
+      if (data['status'] == true) {
+        await logout();
+      }
+      return data;
+    } catch (e) {
+      print("Error deleting account: $e");
+      return {'status': false, 'message': "An error occurred: $e"};
+    }
+  }
+
+  Future<Map<String, dynamic>?> getContactUs() async {
+    try {
+      final url = "$baseUrl/api/contact-us";
+      print("GET Request: $url");
+
+      final response = await http.get(Uri.parse(url));
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching contact us: $e");
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> submitContactForm({
+    required String name,
+    required String email,
+    required String mobile,
+    required String subject,
+    required String message,
+  }) async {
+    try {
+      final url = "$baseUrl/api/contact-form-submit";
+      final body = {
+        'name': name,
+        'email': email,
+        'phone': mobile,
+        'subject': subject,
+        'message': message,
+      };
+
+      print("POST Request (Submit Contact): $url");
+      print("Payload: $body");
+
+      final response = await http.post(Uri.parse(url), body: body);
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      return json.decode(response.body);
+    } catch (e) {
+      print("Error submitting contact form: $e");
+      return {'status': false, 'message': "An error occurred: $e"};
+    }
+  }
 }

@@ -178,6 +178,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           title: design.title,
           index: index,
           allImages: imageUrls,
+          allDesigns: _favoriteDesigns,
           isFavorite: true,
           onFavoriteToggle: () => _toggleFavorite(design),
         );

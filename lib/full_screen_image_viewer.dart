@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mehndi_designs/widgets/common_app_bar.dart';
-import 'package:mehndi_designs/custom_bottom_navigation_bar.dart';
-import 'package:mehndi_designs/main_screen.dart';
+import 'widgets/common_app_bar.dart';
+import 'services/auth_service.dart';
+import 'models/dashboard_model.dart';
+import 'custom_bottom_navigation_bar.dart';
+import 'main_screen.dart';
 
 class FullScreenImageViewer extends StatefulWidget {
-  final List<String> images;
+  final List<DesignModel> designs;
   final int initialIndex;
 
   const FullScreenImageViewer({
     super.key,
-    required this.images,
+    required this.designs,
     required this.initialIndex,
   });
 
@@ -19,14 +21,16 @@ class FullScreenImageViewer extends StatefulWidget {
 }
 
 class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
+  final AuthService _authService = AuthService();
   late PageController _pageController;
   late int _currentIndex;
-  bool isFavorite = false;
+  late bool isFavorite;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    isFavorite = widget.designs[_currentIndex].isFav;
     _pageController = PageController(initialPage: widget.initialIndex);
   }
 
@@ -39,12 +43,53 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   void _onPageChanged(int index) {
     setState(() {
       _currentIndex = index;
-      isFavorite = false;
+      isFavorite = widget.designs[_currentIndex].isFav;
     });
   }
 
+  Future<void> _toggleFavorite() async {
+    final design = widget.designs[_currentIndex];
+    final bool originalIsFav = isFavorite;
+
+    print(
+      "FullScreenImageViewer: Toggle favorite clicked for design: ${design.id}",
+    );
+
+    // 1. Optimistic Update
+    setState(() {
+      isFavorite = !originalIsFav;
+    });
+
+    // 2. API Call
+    final result = await _authService.toggleFavorite(design.id);
+    print(
+      "FullScreenImageViewer: Toggle favorite result status: ${result['status']}",
+    );
+
+    if (result['status'] == false) {
+      // 3. Rollback
+      setState(() {
+        isFavorite = originalIsFav;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? "Action failed")),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    }
+  }
+
   void _nextPage() {
-    if (_currentIndex < widget.images.length - 1) {
+    if (_currentIndex < widget.designs.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -73,7 +118,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
             color: Colors.white,
             size: 24,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () =>
+              Navigator.pop(context, true), // Return true to refresh parent
         ),
       ),
       body: Column(
@@ -92,23 +138,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      isFavorite = !isFavorite;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isFavorite
-                              ? 'Added to Favorites'
-                              : 'Removed from Favorites',
-                          style: GoogleFonts.outfit(),
-                        ),
-                        backgroundColor: const Color(0xFFE28127),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
-                  },
+                  onTap: _toggleFavorite,
+                  behavior: HitTestBehavior.opaque,
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -135,11 +166,11 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
           Expanded(
             child: PageView.builder(
               controller: _pageController,
-              itemCount: widget.images.length,
+              itemCount: widget.designs.length,
               onPageChanged: _onPageChanged,
               itemBuilder: (context, index) {
                 return Center(
-                  child: ZoomableImage(imageUrl: widget.images[index]),
+                  child: ZoomableImage(imageUrl: widget.designs[index].image),
                 );
               },
             ),
@@ -156,7 +187,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                 ),
                 const SizedBox(width: 40),
                 Text(
-                  '${_currentIndex + 1} / ${widget.images.length}',
+                  '${_currentIndex + 1} / ${widget.designs.length}',
                   style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -166,7 +197,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                 const SizedBox(width: 40),
                 _buildControlButton(
                   icon: Icons.arrow_forward_ios,
-                  onTap: _currentIndex < widget.images.length - 1
+                  onTap: _currentIndex < widget.designs.length - 1
                       ? _nextPage
                       : null,
                 ),

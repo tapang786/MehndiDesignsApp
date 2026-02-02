@@ -6,6 +6,8 @@ import 'models/user_model.dart';
 import 'main_screen.dart';
 import 'pages/privacy_policy_screen.dart';
 import 'pages/terms_conditions_screen.dart';
+import 'pages/contact_us_screen.dart';
+import 'pages/delete_account_screen.dart';
 import 'login_screen.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -218,6 +220,34 @@ class _AppDrawerState extends State<AppDrawer> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const TermsConditionsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  Icons.contact_support_outlined,
+                  'Contact Us',
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ContactUsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  Icons.delete_outline,
+                  'Delete Account',
+                  () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DeleteAccountScreen(),
                       ),
                     );
                   },

@@ -298,6 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: design.title,
               index: index,
               allImages: _dashboardData!.designs.map((e) => e.image).toList(),
+              allDesigns: _dashboardData!.designs,
               isFavorite: design.isFav,
               onFavoriteToggle: () => _toggleFavorite(design),
             );
@@ -309,36 +310,56 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _toggleFavorite(DesignModel design) async {
     print("HomeScreen: Toggle favorite clicked for design: ${design.id}");
+
+    final bool originalIsFav = design.isFav;
+
+    // 1. Optimistic Update (Immediate UI response)
+    setState(() {
+      final index = _dashboardData!.designs.indexWhere(
+        (e) => e.id == design.id,
+      );
+      if (index != -1) {
+        _dashboardData!.designs[index] = DesignModel(
+          id: design.id,
+          title: design.title,
+          slug: design.slug,
+          image: design.image,
+          isFav: !originalIsFav,
+        );
+      }
+    });
+
+    // 2. API Call
     final result = await _authService.toggleFavorite(design.id);
     print("HomeScreen: Toggle favorite result status: ${result['status']}");
-    if (result['status'] == true) {
+
+    if (result['status'] == false) {
+      // 3. Rollback on failure
       setState(() {
         final index = _dashboardData!.designs.indexWhere(
           (e) => e.id == design.id,
         );
         if (index != -1) {
-          final updatedDesign = DesignModel(
-            id: design.id,
-            title: design.title,
-            slug: design.slug,
-            image: design.image,
-            isFav: !design.isFav,
-          );
-          _dashboardData!.designs[index] = updatedDesign;
-          print(
-            "HomeScreen: Design ${design.id} isFav updated to: ${!design.isFav}",
-          );
+          _dashboardData!.designs[index] =
+              design; // Revert to original instance
         }
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(result['message'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? "Failed to update favorite"),
+          ),
+        );
       }
     } else {
-      print(
-        "HomeScreen: Failed to toggle favorite for design ${design.id}: ${result['message']}",
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
     }
   }
 }
