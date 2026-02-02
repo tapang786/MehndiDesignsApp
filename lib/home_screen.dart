@@ -295,13 +295,50 @@ class _HomeScreenState extends State<HomeScreen> {
             final design = _dashboardData!.designs[index];
             return DesignCard(
               imageUrl: design.image,
+              title: design.title,
               index: index,
               allImages: _dashboardData!.designs.map((e) => e.image).toList(),
               isFavorite: design.isFav,
+              onFavoriteToggle: () => _toggleFavorite(design),
             );
           },
         ),
       ],
     );
+  }
+
+  Future<void> _toggleFavorite(DesignModel design) async {
+    print("HomeScreen: Toggle favorite clicked for design: ${design.id}");
+    final result = await _authService.toggleFavorite(design.id);
+    print("HomeScreen: Toggle favorite result status: ${result['status']}");
+    if (result['status'] == true) {
+      setState(() {
+        final index = _dashboardData!.designs.indexWhere(
+          (e) => e.id == design.id,
+        );
+        if (index != -1) {
+          final updatedDesign = DesignModel(
+            id: design.id,
+            title: design.title,
+            slug: design.slug,
+            image: design.image,
+            isFav: !design.isFav,
+          );
+          _dashboardData!.designs[index] = updatedDesign;
+          print(
+            "HomeScreen: Design ${design.id} isFav updated to: ${!design.isFav}",
+          );
+        }
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result['message'])));
+      }
+    } else {
+      print(
+        "HomeScreen: Failed to toggle favorite for design ${design.id}: ${result['message']}",
+      );
+    }
   }
 }

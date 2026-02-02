@@ -269,6 +269,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     final design = _designs[index];
                     return DesignCard(
                       imageUrl: design.image,
+                      title: design.title,
                       index: index,
                       allImages: _designs.map((e) => e.image).toList(),
                       isFavorite: design.isFav,
@@ -282,7 +283,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   Future<void> _toggleFavorite(DesignModel design) async {
+    print("CategoriesScreen: Toggle favorite clicked for design: ${design.id}");
     final result = await _authService.toggleFavorite(design.id);
+    print(
+      "CategoriesScreen: Toggle favorite result status: ${result['status']}",
+    );
     if (result['status'] == true) {
       setState(() {
         // Find and update the design in the list
@@ -296,11 +301,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             isFav: !design.isFav,
           );
           _designs[index] = updatedDesign;
+          print(
+            "CategoriesScreen: Design ${design.id} isFav updated to: ${!design.isFav}",
+          );
         }
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result['message'])));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result['message'])));
+      }
+    } else {
+      print(
+        "CategoriesScreen: Failed to toggle favorite for design ${design.id}: ${result['message']}",
+      );
     }
   }
 

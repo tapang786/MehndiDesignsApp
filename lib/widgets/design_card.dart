@@ -4,6 +4,7 @@ import '../full_screen_image_viewer.dart';
 
 class DesignCard extends StatelessWidget {
   final String imageUrl;
+  final String title;
   final int index;
   final List<String> allImages;
   final bool isFavorite;
@@ -12,6 +13,7 @@ class DesignCard extends StatelessWidget {
   const DesignCard({
     super.key,
     required this.imageUrl,
+    required this.title,
     required this.index,
     required this.allImages,
     this.isFavorite = false,
@@ -86,21 +88,29 @@ class DesignCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Design #${index + 1}',
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onTap: onFavoriteToggle,
-                    child: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      size: 20, // Slightly smaller icon
-                      color: Colors.red,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        size: 22,
+                        color: Colors.red,
+                      ),
                     ),
                   ),
                 ],

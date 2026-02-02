@@ -422,12 +422,15 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> toggleFavorite(int designId) async {
+    print("--- Toggle Favorite Start ---");
     try {
       final token = await getToken();
+      print("Token: $token");
+
       final url = "$baseUrl/api/toggle-favorite";
       final body = {'design_id': designId.toString()};
 
-      print("POST Request: $url");
+      print("URL: $url");
       print("Payload: $body");
       final headers = {
         'Authorization': 'Bearer $token',
@@ -441,16 +444,20 @@ class AuthService {
         body: body,
       );
 
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
+      print("Response Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
 
       final data = json.decode(response.body);
+      print("Decoded Data: $data");
+      print("--- Toggle Favorite End ---");
       return {
-        'status': data['status'] == true,
+        'status': data['status'] == true || data['status'] == "true",
         'message': data['message'] ?? "Action failed",
       };
-    } catch (e) {
-      print("Error toggling favorite: $e");
+    } catch (e, stack) {
+      print("Exception in toggleFavorite: $e");
+      print("Stack Trace: $stack");
+      print("--- Toggle Favorite End (Error) ---");
       return {'status': false, 'message': "An error occurred: $e"};
     }
   }

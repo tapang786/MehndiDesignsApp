@@ -4,6 +4,7 @@ import 'services/auth_service.dart';
 import 'models/dashboard_model.dart';
 import 'widgets/common_app_bar.dart';
 import 'widgets/design_card.dart';
+import 'main_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -38,13 +39,20 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Future<void> _toggleFavorite(DesignModel design) async {
+    print("FavoritesScreen: Toggle favorite clicked for design: ${design.id}");
     // Optimistic UI update: remove from list immediately
     setState(() {
       _favoriteDesigns.removeWhere((item) => item.id == design.id);
     });
 
     final result = await _authService.toggleFavorite(design.id);
+    print(
+      "FavoritesScreen: Toggle favorite result status: ${result['status']}",
+    );
     if (result['status'] == false) {
+      print(
+        "FavoritesScreen: Failed to toggle favorite, reverting. Error: ${result['message']}",
+      );
       // Revert if API failed
       _fetchFavorites();
       if (mounted) {
@@ -52,6 +60,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text(result['message'])));
       }
+    } else {
+      print(
+        "FavoritesScreen: Successfully toggled favorite for design: ${design.id}",
+      );
     }
   }
 
@@ -79,24 +91,65 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.favorite_border,
-            size: 80,
-            color: Colors.grey.withOpacity(0.3),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE28127).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.favorite_border,
+              size: 60,
+              color: const Color(0xFFE28127).withOpacity(0.5),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
             'No Favorites Yet',
             style: GoogleFonts.outfit(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Start liking designs to see them here!',
-            style: GoogleFonts.outfit(fontSize: 14, color: Colors.grey[400]),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Explore our stunning Mehndi designs and save your favorites here!',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: () {
+              // Navigate to Categories or Home
+              final mainScreenState = MainScreen.of(context);
+              if (mainScreenState != null) {
+                mainScreenState.setSelectedIndex(0);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE28127),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              'Start Exploring',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -122,6 +175,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         final design = _favoriteDesigns[index];
         return DesignCard(
           imageUrl: design.image,
+          title: design.title,
           index: index,
           allImages: imageUrls,
           isFavorite: true,

@@ -30,6 +30,12 @@ class MainScreenState extends State<MainScreen> {
     _scaffoldKey.currentState?.openDrawer();
   }
 
+  void setSelectedIndex(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
