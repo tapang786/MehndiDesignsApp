@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.activity:activity-ktx:1.8.2")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
 
