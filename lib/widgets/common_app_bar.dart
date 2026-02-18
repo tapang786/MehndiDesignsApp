@@ -27,59 +27,65 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double appBarHeight = screenWidth > 600 ? 90 : 70;
+    double titleFontSize = screenWidth > 600 ? 24 : 19;
+
     return AppBar(
-      toolbarHeight: 80,
+      toolbarHeight: appBarHeight,
       backgroundColor: const Color(0xFFE28127),
       elevation: 0,
+      centerTitle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+      ),
       leading:
           leading ??
-          (onBackOverride != null
-              ? IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: Colors.white,
+          (showLogo
+              ? Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.white, size: 28),
+                    onPressed: () {
+                      final mainScreen = MainScreen.of(context);
+                      if (mainScreen != null) {
+                        mainScreen.openDrawer();
+                      } else {
+                        Scaffold.of(context).openDrawer();
+                      }
+                    },
                   ),
-                  onPressed: onBackOverride,
                 )
-              : (showDrawerButton
+              : (onBackOverride != null
                     ? IconButton(
                         icon: const Icon(
-                          Icons.menu,
+                          Icons.arrow_back_ios_new,
                           color: Colors.white,
-                          size: 30,
+                          size: 22,
                         ),
-                        onPressed: () {
-                          final mainScreen = MainScreen.of(context);
-                          if (mainScreen != null) {
-                            mainScreen.openDrawer();
-                          } else {
-                            Scaffold.of(context).openDrawer();
-                          }
-                        },
+                        onPressed: onBackOverride,
                       )
-                    : null)),
+                    : const BackButton(color: Colors.white))),
       title: showLogo
           ? Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    // color: Colors.white,
-                    // shape: BoxShape.circle,
-                  ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
                   child: Image.asset(
                     'assets/images/mehndi_design.png',
-                    height: 50,
+                    height: screenWidth > 600 ? 50 : 40,
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Mehndi Designs',
-                  style: GoogleFonts.outfit(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Flexible(
+                  child: Text(
+                    'Mehndi Designs',
+                    style: GoogleFonts.outfit(
+                      fontSize: titleFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -87,24 +93,20 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           : Text(
               title ?? '',
               style: GoogleFonts.outfit(
-                fontSize: 24,
+                fontSize: titleFontSize,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
-      centerTitle: true,
-      iconTheme: const IconThemeData(color: Colors.white),
       actions: [
-        if (actions != null) ...actions!,
         if (showNotification)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: Container(
               margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                color: Colors.white.withOpacity(0.15),
+                shape: BoxShape.circle,
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -120,14 +122,14 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                     },
                     icon: Lottie.network(
                       'https://lottie.host/43f60632-6e9f-444a-9b8c-5507ad987f65/Cg2g8s73C1.json',
-                      height: 30,
-                      width: 30,
+                      height: screenWidth > 600 ? 28 : 22,
+                      width: screenWidth > 600 ? 28 : 22,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return const Icon(
                           Icons.notifications_active_outlined,
                           color: Colors.white,
-                          size: 24,
+                          size: 20,
                         );
                       },
                     ),
@@ -172,5 +174,10 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(80);
+  Size get preferredSize {
+    // We can't use MediaQuery here easily, so we use a reasonable default
+    // or let the AppBar handle it if we could, but preferredSize is used by Scaffold.
+    // For simplicity, we can keep it 80 or use 70 as a safer bet for most devices.
+    return const Size.fromHeight(70);
+  }
 }

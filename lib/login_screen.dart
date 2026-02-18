@@ -169,41 +169,58 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 40),
+              SizedBox(height: screenHeight * 0.04),
               // Logo and App Name
-              Center(
-                child: Column(
-                  children: [
-                    Image.asset('assets/images/mehndi_design.png', height: 150),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Welcome Back!',
-                      style: GoogleFonts.outfit(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFFE28127),
-                      ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = MediaQuery.of(context).size.width;
+                  double logoHeight = screenWidth > 600 ? 200 : 120;
+                  double titleFontSize = screenWidth > 600 ? 48 : 32;
+                  double subTitleFontSize = screenWidth > 600 ? 22 : 16;
+
+                  return Center(
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          'assets/images/mehndi_design.png',
+                          height: logoHeight,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Welcome Back!',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            fontSize: titleFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFFE28127),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Log in to your Mehndi Designs account',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            fontSize: subTitleFontSize,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Log in to your Mehndi Designs account',
-                      style: GoogleFonts.outfit(
-                        fontSize: 20,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: screenHeight * 0.04),
 
               // Email Field
               TextField(
@@ -231,9 +248,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                style: GoogleFonts.outfit(fontSize: 20),
+                style: GoogleFonts.outfit(
+                  fontSize: screenWidth > 600 ? 18 : 16,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Password Field
               TextField(
@@ -274,7 +293,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                style: GoogleFonts.outfit(fontSize: 18),
+                style: GoogleFonts.outfit(
+                  fontSize: screenWidth > 600 ? 18 : 16,
+                ),
               ),
 
               // Forgot Password
@@ -299,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: screenHeight * 0.02),
 
               // Login Button
               ElevatedButton(
@@ -330,7 +351,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.03),
 
               // Divider
               Row(
@@ -349,7 +370,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Expanded(child: Divider()),
                 ],
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.03),
 
               // Social Logins
               Row(
@@ -387,7 +408,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: screenHeight * 0.04),
 
               // Sign Up Option
               Row(

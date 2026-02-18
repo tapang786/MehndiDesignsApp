@@ -42,8 +42,10 @@ class _AppDrawerState extends State<AppDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     return Drawer(
-      width: MediaQuery.of(context).size.width * 0.70,
+      width: screenWidth > 600 ? 350 : screenWidth * 0.8,
+      backgroundColor: Colors.white,
       child: Column(
         children: [
           ValueListenableBuilder<User?>(
@@ -54,13 +56,28 @@ class _AppDrawerState extends State<AppDrawer> {
               final String? imageUrl = user?.profileImage ?? _profileImageUrl;
 
               return Container(
-                padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  MediaQuery.of(context).padding.top + 12,
+                  16,
+                  14,
+                ),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [Color(0xFFE28127), Color(0xFFF2A154)],
                   ),
+                  borderRadius: const BorderRadius.only(
+                    bottomRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE28127).withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -92,8 +109,10 @@ class _AppDrawerState extends State<AppDrawer> {
                         children: [
                           Text(
                             name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.outfit(
-                              fontSize: 20,
+                              fontSize: screenWidth > 600 ? 22 : 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -101,8 +120,10 @@ class _AppDrawerState extends State<AppDrawer> {
                           const SizedBox(height: 4),
                           Text(
                             email,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.outfit(
-                              fontSize: 14,
+                              fontSize: screenWidth > 600 ? 15 : 13,
                               color: Colors.white.withOpacity(0.9),
                             ),
                           ),
@@ -117,7 +138,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
               children: [
                 _buildDrawerItem(context, Icons.home_outlined, 'Home', () {
                   Navigator.pop(context); // Close drawer
@@ -189,7 +210,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 //     );
                 //   },
                 // ),
-                const Divider(height: 32),
+                const Divider(height: 8),
                 // _buildDrawerItem(
                 //   context,
                 //   Icons.settings_outlined,
@@ -275,7 +296,29 @@ class _AppDrawerState extends State<AppDrawer> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              children: [
+                Text(
+                  'Version 1.0.0',
+                  style: GoogleFonts.outfit(
+                    color: Colors.grey[400],
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Powered by Invisofts IT',
+                  style: GoogleFonts.outfit(
+                    color: Colors.grey[400],
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -290,7 +333,7 @@ class _AppDrawerState extends State<AppDrawer> {
     bool isActive = false,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 5),
       decoration: BoxDecoration(
         color: isActive
             ? const Color(0xFFE28127).withOpacity(0.1)
@@ -305,13 +348,15 @@ class _AppDrawerState extends State<AppDrawer> {
         title: Text(
           title,
           style: GoogleFonts.outfit(
-            fontSize: 18,
+            fontSize: MediaQuery.of(context).size.width > 600 ? 20 : 16,
             fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
             color:
                 color ?? (isActive ? const Color(0xFFE28127) : Colors.black87),
           ),
         ),
         trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+        dense: true,
+        visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         onTap: onTap,
       ),

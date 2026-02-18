@@ -81,114 +81,143 @@ class _SplashScreenState extends State<SplashScreen> {
             // const SizedBox(height: 50),
             // Image.asset('assets/images/mehndi_design.png', height: 125),
             Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                itemCount: _pages.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(30),
-                          child: Image.asset(
-                            _pages[index]['image']!,
-                            height: 400,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 400,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenHeight = constraints.maxHeight;
+                  double screenWidth = constraints.maxWidth;
+
+                  // Adjust sizes based on screen height
+                  double imageHeight = screenHeight * 0.45;
+                  if (imageHeight > 450) imageHeight = 450;
+
+                  double titleFontSize = screenWidth > 600 ? 44 : 32;
+                  double descFontSize = screenWidth > 600 ? 22 : 18;
+                  double contentPadding = screenWidth > 600 ? 60 : 30;
+
+                  return PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPage = index;
+                      });
+                    },
+                    itemCount: _pages.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: contentPadding,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(30),
+                              child: Image.asset(
+                                _pages[index]['image']!,
+                                height: imageHeight,
                                 width: double.infinity,
-                                color: Colors.grey[200],
-                                child: const Icon(
-                                  Icons.image_not_supported,
-                                  size: 50,
-                                  color: Colors.grey,
-                                ),
-                              );
-                            },
-                          ),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    height: imageHeight,
+                                    width: double.infinity,
+                                    color: Colors.grey[200],
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                      size: 50,
+                                      color: Colors.grey,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(height: screenHeight * 0.05),
+                            Text(
+                              _pages[index]['title']!,
+                              style: GoogleFonts.outfit(
+                                fontSize: titleFontSize,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFE28127),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _pages[index]['description']!,
+                              style: GoogleFonts.outfit(
+                                fontSize: descFontSize,
+                                color: Colors.grey[600],
+                                height: 1.4,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 40),
-                        Text(
-                          _pages[index]['title']!,
-                          style: GoogleFonts.outfit(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFFE28127),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _pages[index]['description']!,
-                          style: GoogleFonts.outfit(
-                            fontSize: 20,
-                            color: Colors.grey[600],
-                            height: 1.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Indicators
-                  Row(
-                    children: List.generate(
-                      _pages.length,
-                      (index) => Container(
-                        margin: const EdgeInsets.only(right: 5),
-                        height: 10,
-                        width: _currentPage == index ? 20 : 10,
-                        decoration: BoxDecoration(
-                          color: _currentPage == index
-                              ? const Color(0xFFE28127)
-                              : Colors.grey[300],
-                          borderRadius: BorderRadius.circular(5),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = MediaQuery.of(context).size.width;
+                  double buttonFontSize = screenWidth > 600 ? 22 : 18;
+                  double buttonPaddingVertical = screenWidth > 600 ? 18 : 12;
+                  double buttonPaddingHorizontal = screenWidth > 600 ? 40 : 25;
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Indicators
+                      Row(
+                        children: List.generate(
+                          _pages.length,
+                          (index) => Container(
+                            margin: const EdgeInsets.only(right: 5),
+                            height: screenWidth > 600 ? 12 : 8,
+                            width: _currentPage == index
+                                ? (screenWidth > 600 ? 24 : 18)
+                                : (screenWidth > 600 ? 12 : 8),
+                            decoration: BoxDecoration(
+                              color: _currentPage == index
+                                  ? const Color(0xFFE28127)
+                                  : Colors.grey[300],
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  // Button
-                  ElevatedButton(
-                    onPressed: _onNext,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE28127),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                      // Button
+                      ElevatedButton(
+                        onPressed: _onNext,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE28127),
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: buttonPaddingHorizontal,
+                            vertical: buttonPaddingVertical,
+                          ),
+                        ),
+                        child: Text(
+                          _currentPage == _pages.length - 1
+                              ? 'Get Started'
+                              : 'Next',
+                          style: GoogleFonts.outfit(
+                            fontSize: buttonFontSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 15,
-                      ),
-                    ),
-                    child: Text(
-                      _currentPage == _pages.length - 1
-                          ? 'Get Started'
-                          : 'Next',
-                      style: GoogleFonts.outfit(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               ),
             ),
           ],

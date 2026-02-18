@@ -168,7 +168,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         // Sub-categories SlideView (Horizontal List)
         if (_subCategories.isNotEmpty)
           Container(
-            height: 160,
+            height: 150,
             margin: const EdgeInsets.symmetric(vertical: 8),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -177,67 +177,94 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               itemBuilder: (context, index) {
                 final sub = _subCategories[index];
                 final isSelected = _selectedSubCategory?.id == sub.id;
-                double itemWidth =
-                    (MediaQuery.of(context).size.width - 24) / 4.2;
 
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedSubCategory = sub;
-                      _designs = [];
-                    });
-                    _fetchDesigns();
-                  },
-                  child: SizedBox(
-                    width: itemWidth,
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFFE28127)
-                                  : Colors.grey[200]!,
-                              width: 2.5,
-                            ),
-                            image: DecorationImage(
-                              image: NetworkImage(sub.image),
-                              fit: BoxFit.cover,
-                              onError: (exception, stackTrace) {},
-                            ),
-                            boxShadow: [
-                              BoxShadow(
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    double screenWidth = MediaQuery.of(context).size.width;
+                    double itemWidth = screenWidth > 600 ? 140 : 100;
+                    double circleSize = screenWidth > 600 ? 100 : 80;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedSubCategory = sub;
+                          _designs = [];
+                        });
+                        _fetchDesigns();
+                      },
+                      child: Container(
+                        width: itemWidth,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                              width: circleSize,
+                              height: circleSize,
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
                                 color: isSelected
-                                    ? const Color(0xFFE28127).withOpacity(0.2)
-                                    : Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
+                                    ? const Color(0xFFE28127).withOpacity(0.1)
+                                    : Colors.white,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFFE28127)
+                                      : Colors.grey[200]!,
+                                  width: isSelected ? 3 : 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: isSelected
+                                        ? const Color(
+                                            0xFFE28127,
+                                          ).withOpacity(0.2)
+                                        : Colors.black.withOpacity(0.04),
+                                    blurRadius: isSelected ? 12 : 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                              child: ClipOval(
+                                child: Image.network(
+                                  sub.image,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                        Icons.category,
+                                        color: Colors.grey,
+                                      ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Text(
+                                sub.name,
+                                style: GoogleFonts.outfit(
+                                  fontSize: screenWidth > 600 ? 16 : 13,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w600,
+                                  color: isSelected
+                                      ? const Color(0xFFE28127)
+                                      : Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          sub.name,
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w600,
-                            color: isSelected
-                                ? const Color(0xFFE28127)
-                                : Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -256,25 +283,33 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     style: GoogleFonts.outfit(color: Colors.grey),
                   ),
                 )
-              : GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.8,
-                  ),
-                  itemCount: _designs.length,
-                  itemBuilder: (context, index) {
-                    final design = _designs[index];
-                    return DesignCard(
-                      imageUrl: design.image,
-                      title: design.title,
-                      index: index,
-                      allImages: _designs.map((e) => e.image).toList(),
-                      allDesigns: _designs,
-                      isFavorite: design.isFav,
-                      onFavoriteToggle: () => _toggleFavorite(design),
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    double screenWidth = constraints.maxWidth;
+                    int crossAxisCount = screenWidth > 600 ? 3 : 2;
+                    if (screenWidth > 900) crossAxisCount = 4;
+
+                    return GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 0.7,
+                      ),
+                      itemCount: _designs.length,
+                      itemBuilder: (context, index) {
+                        final design = _designs[index];
+                        return DesignCard(
+                          imageUrl: design.image,
+                          title: design.title,
+                          index: index,
+                          allImages: _designs.map((e) => e.image).toList(),
+                          allDesigns: _designs,
+                          isFavorite: design.isFav,
+                          onFavoriteToggle: () => _toggleFavorite(design),
+                        );
+                      },
                     );
                   },
                 ),
@@ -334,74 +369,90 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   Widget _buildMainCategoryGrid() {
-    return GridView.builder(
-      padding: const EdgeInsets.all(20),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
-        childAspectRatio: 1,
-      ),
-      itemCount: _apiCategories.length,
-      itemBuilder: (context, index) {
-        final category = _apiCategories[index];
-        return GestureDetector(
-          onTap: () => _onCategoryTap(category),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 25,
-                  offset: const Offset(0, 10),
-                ),
-                BoxShadow(
-                  color: const Color(0xFFE28127).withOpacity(0.06),
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    border: Border.all(
-                      color: const Color(0xFFE28127),
-                      width: 2.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFE28127).withOpacity(0.2),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 70,
-                    backgroundImage: NetworkImage(category.image),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  category.name,
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double screenWidth = constraints.maxWidth;
+        int crossAxisCount = screenWidth > 600 ? 3 : 2;
+        if (screenWidth > 900) crossAxisCount = 4;
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(20),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 20,
+            mainAxisSpacing: 20,
+            childAspectRatio: 0.85,
           ),
+          itemCount: _apiCategories.length,
+          itemBuilder: (context, index) {
+            final category = _apiCategories[index];
+            return GestureDetector(
+              onTap: () => _onCategoryTap(category),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.08),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          border: Border.all(
+                            color: const Color(0xFFE28127).withOpacity(0.3),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFE28127).withOpacity(0.15),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: screenWidth > 600 ? 80 : 60,
+                          backgroundColor: Colors.white,
+                          backgroundImage: NetworkImage(category.image),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        category.name,
+                        style: GoogleFonts.outfit(
+                          fontSize: screenWidth > 600 ? 22 : 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
