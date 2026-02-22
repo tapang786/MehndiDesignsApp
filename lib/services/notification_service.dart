@@ -23,7 +23,7 @@ class NotificationService {
 
     // Initialize local notifications for foreground messages
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('launcher_icon');
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings();
     const InitializationSettings initSettings = InitializationSettings(
@@ -31,7 +31,13 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _localNotifications.initialize(initSettings);
+    try {
+      await _localNotifications.initialize(initSettings);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error initializing local notifications: $e');
+      }
+    }
 
     // Handle background messages
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -65,7 +71,7 @@ class NotificationService {
             'High Importance Notifications',
             importance: Importance.max,
             priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
+            icon: 'launcher_icon',
           ),
           iOS: DarwinNotificationDetails(),
         ),
