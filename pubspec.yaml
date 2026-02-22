@@ -50,7 +50,6 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   google_sign_in: ^6.2.2
   sign_in_with_apple: ^6.1.1
-  google_mobile_ads: ^7.0.0
 
 
 dev_dependencies:
