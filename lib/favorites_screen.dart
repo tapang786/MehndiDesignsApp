@@ -6,6 +6,7 @@ import 'widgets/common_app_bar.dart';
 import 'login_screen.dart';
 import 'widgets/design_card.dart';
 import 'main_screen.dart';
+import 'widgets/native_ad_widget.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -94,7 +95,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           : RefreshIndicator(
               onRefresh: _fetchFavorites,
               color: const Color(0xFFE28127),
-              child: _buildFavoritesGrid(),
+              child: Column(
+                children: [
+                  const NativeAdWidget(),
+                  Expanded(child: _buildFavoritesGrid()),
+                ],
+              ),
             ),
     );
   }

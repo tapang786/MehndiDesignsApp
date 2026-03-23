@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'widgets/common_app_bar.dart';
+import 'widgets/banner_ad_widget.dart';
 import 'services/auth_service.dart';
 import 'models/dashboard_model.dart';
 import 'login_screen.dart';
@@ -138,7 +139,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             : _errorMessage != null
             ? _buildErrorWidget()
             : _selectedCategory == null
-            ? _buildMainCategoryGrid()
+            ? Column(
+                children: [
+                  Expanded(child: _buildMainCategoryGrid()),
+                  const BannerAdWidget(), // Using smaller banner ad in footer
+                ],
+              )
             : _buildSubCategoryView(),
       ),
     );
@@ -315,6 +321,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   },
                 ),
         ),
+        const BannerAdWidget(),
       ],
     );
   }
@@ -468,5 +475,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         );
       },
     );
+
+    // Or at the bottom of the grid, but GridView.builder is already taking the whole space.
+    // I will wrap the GridView in a Column if needed, but for now let's just add it to the subcategory view.
   }
 }

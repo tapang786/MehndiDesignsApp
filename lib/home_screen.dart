@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'login_screen.dart';
 import 'main_screen.dart';
 import 'widgets/common_app_bar.dart';
+import 'widgets/native_ad_widget.dart';
 import 'widgets/design_card.dart';
 import 'widgets/banner_ad_widget.dart';
 import 'services/auth_service.dart';
@@ -93,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (_dashboardData?.categories != null &&
                         _dashboardData!.categories.isNotEmpty)
                       _buildCategorySection(),
+                    const NativeAdWidget(),
                     const SizedBox(height: 24),
                     if (_dashboardData?.designs != null &&
                         _dashboardData!.designs.isNotEmpty)

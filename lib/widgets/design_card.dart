@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/ad_service.dart';
 import '../full_screen_image_viewer.dart';
 
 import '../models/dashboard_model.dart';
@@ -28,6 +29,7 @@ class DesignCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
+        AdService.showInterstitialAd();
         await Navigator.push(
           context,
           MaterialPageRoute(

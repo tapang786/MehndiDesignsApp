@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'services/auth_service.dart';
@@ -146,6 +147,13 @@ class _AppDrawerState extends State<AppDrawer> {
                   ],
                 ),
               );
+            },
+          ),
+          ValueListenableBuilder<User?>(
+            valueListenable: AuthService.userNotifier,
+            builder: (context, user, child) {
+              if (user == null) return const SizedBox.shrink();
+              return _buildVersionInfo();
             },
           ),
 
@@ -343,56 +351,73 @@ class _AppDrawerState extends State<AppDrawer> {
               ],
             ),
           ),
-          const Divider(height: 1),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Version $_appVersion',
-                    style: GoogleFonts.outfit(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Powered by ',
-                      style: GoogleFonts.outfit(
-                        color: Colors.grey[500],
-                        fontSize: 11,
-                      ),
-                    ),
-                    Text(
-                      'Invisofts IT',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFE28127),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+
+          ValueListenableBuilder<User?>(
+            valueListenable: AuthService.userNotifier,
+            builder: (context, user, child) {
+              if (user != null) return const SizedBox.shrink();
+              return _buildVersionInfo();
+            },
           ),
+          const SizedBox(height: 40),
         ],
       ),
+    );
+  }
+
+  Widget _buildVersionInfo() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Divider(height: 1),
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Version $_appVersion',
+                  style: GoogleFonts.outfit(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Powered by ',
+                    style: GoogleFonts.outfit(
+                      color: Colors.grey[500],
+                      fontSize: 11,
+                    ),
+                  ),
+                  Text(
+                    'Invisofts IT',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFE28127),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
