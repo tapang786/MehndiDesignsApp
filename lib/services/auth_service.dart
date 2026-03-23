@@ -745,4 +745,31 @@ class AuthService {
       return {'status': false, 'message': "An error occurred: $e"};
     }
   }
+
+  Future<Map<String, dynamic>?> checkAppUpdate() async {
+    try {
+      final url = "$baseUrl/api/site-setting";
+      print("POST Request (Check Update): $url");
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Accept': 'application/json'},
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return json.decode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print("Error checking for update: $e");
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getSiteSettings() async {
+    return getContactUs();
+  }
 }
