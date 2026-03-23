@@ -26,12 +26,15 @@ class _AppDrawerState extends State<AppDrawer> {
   String _userEmail = '';
   String? _profileImageUrl;
   String _appVersion = '1.0.0';
+  String _shareMessage =
+      'Check out this Mehndi Designs app: https://play.google.com/store/apps/details?id=com.invisofts.mehndi_designs';
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _initPackageInfo();
+    _loadSiteSettings();
   }
 
   Future<void> _initPackageInfo() async {
@@ -51,6 +54,23 @@ class _AppDrawerState extends State<AppDrawer> {
         _userEmail = user.email;
         _profileImageUrl = user.profileImage;
       });
+    }
+  }
+
+  Future<void> _loadSiteSettings() async {
+    try {
+      final data = await _authService.getContactUs();
+      if (data != null && data['status'] == true) {
+        setState(() {
+          if (data['data'] != null) {
+            _shareMessage = data['data']['share_message'] ?? _shareMessage;
+          } else {
+            _shareMessage = data['share_message'] ?? _shareMessage;
+          }
+        });
+      }
+    } catch (e) {
+      print("Error loading site settings: $e");
     }
   }
 
@@ -290,9 +310,7 @@ class _AppDrawerState extends State<AppDrawer> {
                 const Divider(),
                 _buildDrawerItem(context, Icons.share_outlined, 'Share App', () {
                   Navigator.pop(context);
-                  Share.share(
-                    'Check out this Mehndi Designs app: https://play.google.com/store/apps/details?id=com.invisofts.mehndi_designs',
-                  );
+                  Share.share(_shareMessage);
                 }),
                 _buildDrawerItem(
                   context,
