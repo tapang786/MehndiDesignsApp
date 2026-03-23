@@ -220,25 +220,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                 },
               ),
-              SizedBox(height: screenHeight * 0.04),
+              // SizedBox(height: screenHeight * 0.04),
 
               // Divider
-              Row(
-                children: [
-                  const Expanded(child: Divider()),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Or continue with',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ),
-                  const Expanded(child: Divider()),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     const Expanded(child: Divider()),
+              //     Padding(
+              //       padding: const EdgeInsets.symmetric(horizontal: 16),
+              //       child: Text(
+              //         'Or continue with',
+              //         style: GoogleFonts.outfit(
+              //           fontSize: 18,
+              //           color: Colors.grey[600],
+              //         ),
+              //       ),
+              //     ),
+              //     const Expanded(child: Divider()),
+              //   ],
+              // ),
               SizedBox(height: screenHeight * 0.03),
 
               // Social Logins

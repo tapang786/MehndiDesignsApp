@@ -669,15 +669,21 @@ class AuthService {
 
   Future<Map<String, dynamic>?> getContactUs() async {
     try {
+      final token = await getToken();
       final url = "$baseUrl/api/site-setting";
-      print("GET Request: $url");
+      print("POST Request: $url");
 
-      final response = await http.get(Uri.parse(url));
+      final headers = {
+        if (token != null) 'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+
+      final response = await http.post(Uri.parse(url), headers: headers);
 
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return json.decode(response.body);
       }
       return null;
