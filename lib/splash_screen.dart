@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'main_screen.dart';
 import 'services/auth_service.dart';
@@ -25,6 +26,8 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkAuth() async {
     final token = await _authService.getToken();
     if (token != null && mounted) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('show_onboarding', false);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -64,11 +67,15 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-  void _navigateToMain() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainScreen()),
-    );
+  Future<void> _navigateToMain() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('show_onboarding', false);
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    }
   }
 
   @override

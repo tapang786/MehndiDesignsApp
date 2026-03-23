@@ -96,9 +96,12 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           } else {
             print("Social Login failed: ${result['message']}");
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(result['message'])));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message']),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         }
       } else {
@@ -149,9 +152,12 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         } else {
           print("Social Login failed: ${result['message']}");
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(result['message'])));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message']),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       }
     } catch (e, stack) {

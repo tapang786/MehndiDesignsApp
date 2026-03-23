@@ -3,7 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'services/notification_service.dart';
 import 'services/ad_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'splash_screen.dart';
+import 'main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,11 +13,16 @@ void main() async {
   await MobileAds.instance.initialize();
   await NotificationService.initialize();
   AdService.loadInterstitialAd();
-  runApp(const MyApp());
+
+  final prefs = await SharedPreferences.getInstance();
+  final bool showOnboarding = prefs.getBool('show_onboarding') ?? true;
+
+  runApp(MyApp(showOnboarding: showOnboarding));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool showOnboarding;
+  const MyApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +37,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+      home: showOnboarding ? const SplashScreen() : const MainScreen(),
     );
   }
 }

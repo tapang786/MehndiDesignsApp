@@ -150,15 +150,36 @@ class AuthService {
         'image': image ?? "",
         'fcm_token': fcmToken ?? 'device_token_not_found',
       };
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
       print("POST Request: $url");
-      print("Payload: $body");
+      print("Headers: $headers");
+      print("Payload: ${json.encode(body)}");
 
-      final response = await http.post(Uri.parse(url), body: body);
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: json.encode(body),
+      );
 
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
 
-      final data = json.decode(response.body);
+      if (response.body.isEmpty) {
+        return {'status': false, 'message': "Empty response from server"};
+      }
+
+      dynamic data;
+      try {
+        data = json.decode(response.body);
+      } catch (e) {
+        return {
+          'status': false,
+          'message': "Server error: Invalid response format",
+        };
+      }
       print("Parsed Data: $data");
 
       if (response.statusCode == 200 && data['status'] == true) {

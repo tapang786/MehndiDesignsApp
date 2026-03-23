@@ -149,13 +149,6 @@ class _AppDrawerState extends State<AppDrawer> {
               );
             },
           ),
-          ValueListenableBuilder<User?>(
-            valueListenable: AuthService.userNotifier,
-            builder: (context, user, child) {
-              if (user == null) return const SizedBox.shrink();
-              return _buildVersionInfo();
-            },
-          ),
 
           Expanded(
             child: ListView(
@@ -352,13 +345,7 @@ class _AppDrawerState extends State<AppDrawer> {
             ),
           ),
 
-          ValueListenableBuilder<User?>(
-            valueListenable: AuthService.userNotifier,
-            builder: (context, user, child) {
-              if (user != null) return const SizedBox.shrink();
-              return _buildVersionInfo();
-            },
-          ),
+          _buildVersionInfo(),
           const SizedBox(height: 40),
         ],
       ),
