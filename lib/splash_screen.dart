@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'login_screen.dart';
+
 import 'main_screen.dart';
 import 'services/auth_service.dart';
 
@@ -60,14 +60,14 @@ class _SplashScreenState extends State<SplashScreen> {
         curve: Curves.easeIn,
       );
     } else {
-      _navigateToLogin();
+      _navigateToMain();
     }
   }
 
-  void _navigateToLogin() {
+  void _navigateToMain() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      MaterialPageRoute(builder: (context) => const MainScreen()),
     );
   }
 

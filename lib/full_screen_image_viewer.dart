@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'widgets/common_app_bar.dart';
 import 'services/auth_service.dart';
 import 'models/dashboard_model.dart';
+import 'login_screen.dart';
 import 'custom_bottom_navigation_bar.dart';
 import 'main_screen.dart';
 
@@ -48,6 +49,17 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   }
 
   Future<void> _toggleFavorite() async {
+    final token = await _authService.getToken();
+    if (token == null) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+      return;
+    }
+
     final design = widget.designs[_currentIndex];
     final bool originalIsFav = isFavorite;
 

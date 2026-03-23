@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'widgets/common_app_bar.dart';
 import 'services/auth_service.dart';
 import 'models/user_model.dart';
+import 'login_screen.dart';
 
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
@@ -26,6 +27,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   String? _profileImageUrl;
   File? _imageFile;
   bool _isLoading = true;
+  bool _isLoggedIn = true;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -44,6 +46,17 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   }
 
   Future<void> _loadUserData() async {
+    final token = await _authService.getToken();
+    if (token == null) {
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = false;
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
     // First try to load from local storage for immediate UI update
     final localUser = await _authService.getUser();
     if (localUser != null) {
@@ -134,6 +147,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFE28127)),
             )
+          : !_isLoggedIn
+          ? _buildLoginPrompt()
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -274,6 +289,63 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildLoginPrompt() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.person_outline, size: 80, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            'Login to view Profile',
+            style: GoogleFonts.outfit(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Manage your account and preferences.',
+            style: GoogleFonts.outfit(fontSize: 16, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              ).then((_) {
+                 // re-evaluate auth status instead of just setting true
+                 _loadUserData();
+                 setState(() {
+                   _isLoading = true;
+                   _isLoggedIn = true;
+                 });
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE28127),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Text(
+              'Log In',
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

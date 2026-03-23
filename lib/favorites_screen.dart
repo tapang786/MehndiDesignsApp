@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'services/auth_service.dart';
 import 'models/dashboard_model.dart';
 import 'widgets/common_app_bar.dart';
+import 'login_screen.dart';
 import 'widgets/design_card.dart';
 import 'main_screen.dart';
 
@@ -17,6 +18,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   final AuthService _authService = AuthService();
   List<DesignModel> _favoriteDesigns = [];
   bool _isLoading = true;
+  bool _isLoggedIn = true;
 
   @override
   void initState() {
@@ -26,6 +28,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   Future<void> _fetchFavorites() async {
     setState(() => _isLoading = true);
+    final token = await _authService.getToken();
+    if (token == null) {
+      setState(() {
+        _isLoggedIn = false;
+        _isLoading = false;
+      });
+      return;
+    }
+
     try {
       final favorites = await _authService.getFavorites();
       setState(() {
@@ -76,6 +87,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFFE28127)),
             )
+          : !_isLoggedIn
+          ? _buildLoginPrompt()
           : _favoriteDesigns.isEmpty
           ? _buildEmptyState()
           : RefreshIndicator(
@@ -83,6 +96,58 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               color: const Color(0xFFE28127),
               child: _buildFavoritesGrid(),
             ),
+    );
+  }
+
+  Widget _buildLoginPrompt() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.lock_outline, size: 80, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            'Login to view Favorites',
+            style: GoogleFonts.outfit(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Keep your favorite designs synced across devices.',
+            style: GoogleFonts.outfit(fontSize: 16, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              ).then((_) {
+                 _fetchFavorites(); // Refresh after coming back
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE28127),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: Text(
+              'Log In',
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

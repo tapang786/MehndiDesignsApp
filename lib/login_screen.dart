@@ -222,6 +222,81 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: screenHeight * 0.04),
 
+              // Divider
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Or continue with',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+              SizedBox(height: screenHeight * 0.03),
+
+              // Social Logins
+              Row(
+                children: [
+                  _buildSocialButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.network(
+                        'https://w7.pngwing.com/pngs/326/85/png-transparent-google-logo-google-text-trademark-logo-thumbnail.png',
+                        height: 24,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.g_mobiledata,
+                              size: 32,
+                              color: Colors.blue,
+                            ),
+                      ),
+                    ),
+                    label: 'Google',
+                    onPressed: _handleGoogleLogin,
+                  ),
+                  const SizedBox(width: 16),
+                  _buildSocialButton(
+                    icon: const Icon(
+                      Icons.apple,
+                      size: 30,
+                      color: Colors.black,
+                    ),
+                    label: 'Apple',
+                    onPressed: _handleAppleLogin,
+                  ),
+                ],
+              ),
+              SizedBox(height: screenHeight * 0.04),
+
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Or log in with email',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+              SizedBox(height: screenHeight * 0.03),
+
               // Email Field
               TextField(
                 controller: _emailController,
@@ -352,63 +427,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
               ),
               SizedBox(height: screenHeight * 0.03),
-
-              // Divider
-              Row(
-                children: [
-                  const Expanded(child: Divider()),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Or log in with',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ),
-                  const Expanded(child: Divider()),
-                ],
-              ),
-              SizedBox(height: screenHeight * 0.03),
-
-              // Social Logins
-              Row(
-                children: [
-                  _buildSocialButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Image.network(
-                        'https://w7.pngwing.com/pngs/326/85/png-transparent-google-logo-google-text-trademark-logo-thumbnail.png',
-                        height: 24,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.g_mobiledata,
-                              size: 32,
-                              color: Colors.blue,
-                            ),
-                      ),
-                    ),
-                    label: 'Google',
-                    onPressed: _handleGoogleLogin,
-                  ),
-                  const SizedBox(width: 16),
-                  _buildSocialButton(
-                    icon: const Icon(
-                      Icons.apple,
-                      size: 30,
-                      color: Colors.black,
-                    ),
-                    label: 'Apple',
-                    onPressed: _handleAppleLogin,
-                  ),
-                ],
-              ),
-              SizedBox(height: screenHeight * 0.04),
 
               // Sign Up Option
               Row(

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'widgets/common_app_bar.dart';
 import 'services/auth_service.dart';
 import 'models/dashboard_model.dart';
+import 'login_screen.dart';
 import 'widgets/design_card.dart';
 
 class CategoriesScreen extends StatefulWidget {
@@ -319,6 +320,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   Future<void> _toggleFavorite(DesignModel design) async {
+    final token = await _authService.getToken();
+    if (token == null) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+      return;
+    }
+
     print("CategoriesScreen: Toggle favorite clicked for design: ${design.id}");
 
     final bool originalIsFav = design.isFav;

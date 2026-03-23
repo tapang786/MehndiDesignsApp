@@ -9,6 +9,8 @@ import 'pages/terms_conditions_screen.dart';
 import 'pages/contact_us_screen.dart';
 import 'pages/delete_account_screen.dart';
 import 'login_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
@@ -22,11 +24,22 @@ class _AppDrawerState extends State<AppDrawer> {
   String _userName = 'Guest';
   String _userEmail = '';
   String? _profileImageUrl;
+  String _appVersion = '1.0.0';
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _initPackageInfo();
+  }
+
+  Future<void> _initPackageInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = info.version;
+      });
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -280,41 +293,100 @@ class _AppDrawerState extends State<AppDrawer> {
                     'Check out this Mehndi Designs app: https://play.google.com/store/apps/details?id=com.invisofts.mehndi_designs',
                   );
                 }),
-                _buildDrawerItem(context, Icons.star_outline, 'Rate Us', () {}),
-                _buildDrawerItem(context, Icons.logout, 'Logout', () async {
-                  await _authService.logout();
-                  if (mounted) {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                      (route) => false,
+                _buildDrawerItem(
+                  context,
+                  Icons.star_outline,
+                  'Rate Us',
+                  () async {
+                    Navigator.pop(context);
+                    final Uri url = Uri.parse(
+                      'https://play.google.com/store/apps/details?id=com.invisofts.mehndi_designs',
                     );
-                  }
-                }, color: Colors.red),
+                    if (!await launchUrl(
+                      url,
+                      mode: LaunchMode.externalApplication,
+                    )) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Could not open Google Play Store'),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  AuthService.userNotifier.value == null
+                      ? Icons.login
+                      : Icons.logout,
+                  AuthService.userNotifier.value == null ? 'Login' : 'Logout',
+                  () async {
+                    if (AuthService.userNotifier.value != null) {
+                      await _authService.logout();
+                    }
+                    if (mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    }
+                  },
+                  color: AuthService.userNotifier.value == null
+                      ? const Color(0xFFE28127)
+                      : Colors.red,
+                ),
               ],
             ),
           ),
           const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Version 1.0.0',
-                  style: GoogleFonts.outfit(
-                    color: Colors.grey[400],
-                    fontSize: 12,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Version $_appVersion',
+                    style: GoogleFonts.outfit(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Powered by Invisofts IT',
-                  style: GoogleFonts.outfit(
-                    color: Colors.grey[400],
-                    fontSize: 10,
-                  ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Powered by ',
+                      style: GoogleFonts.outfit(
+                        color: Colors.grey[500],
+                        fontSize: 11,
+                      ),
+                    ),
+                    Text(
+                      'Invisofts IT',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFE28127),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

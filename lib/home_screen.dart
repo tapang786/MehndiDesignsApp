@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'login_screen.dart';
 import 'main_screen.dart';
 import 'widgets/common_app_bar.dart';
 import 'widgets/design_card.dart';
@@ -443,6 +444,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _toggleFavorite(DesignModel design) async {
+    final token = await _authService.getToken();
+    if (token == null) {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+      return;
+    }
+
     print("HomeScreen: Toggle favorite clicked for design: ${design.id}");
 
     final bool originalIsFav = design.isFav;
