@@ -37,9 +37,19 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     try {
       final data = await _authService.getContactUs();
       if (data != null && data['status'] == true) {
-        // Assuming the API might return these fields, otherwise using fallbacks
-        // If the description contains the info, we could parse it, but usually
-        // there are specific fields or we just show the fallback.
+        setState(() {
+          // If the backend returns nested data, we map it here
+          if (data['data'] != null) {
+            _contactEmail = data['data']['email'] ?? _contactEmail;
+            _contactPhone = data['data']['contact'] ?? _contactPhone;
+            _contactAddress = data['data']['site_address'] ?? _contactAddress;
+          } else {
+            // Or flat data
+            _contactEmail = data['email'] ?? _contactEmail;
+            _contactPhone = data['contact'] ?? _contactPhone;
+            _contactAddress = data['site_address'] ?? _contactAddress;
+          }
+        });
       }
     } catch (e) {
       print("Error fetching contact detail: $e");

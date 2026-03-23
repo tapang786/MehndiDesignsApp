@@ -669,7 +669,7 @@ class AuthService {
 
   Future<Map<String, dynamic>?> getContactUs() async {
     try {
-      final url = "$baseUrl/api/contact-us";
+      final url = "$baseUrl/api/site-setting";
       print("GET Request: $url");
 
       final response = await http.get(Uri.parse(url));
@@ -695,7 +695,7 @@ class AuthService {
     required String message,
   }) async {
     try {
-      final url = "$baseUrl/api/contact-form-submit";
+      final url = "$baseUrl/api/submit-contact";
       final body = {
         'name': name,
         'email': email,
