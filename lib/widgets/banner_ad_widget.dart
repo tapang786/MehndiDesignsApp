@@ -53,11 +53,14 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     }
 
     return Container(
+      width: double.infinity,
       alignment: Alignment.center,
-      width: _bannerAd!.size.width.toDouble(),
-      height: _bannerAd!.size.height.toDouble(),
       margin: const EdgeInsets.symmetric(vertical: 8),
-      child: AdWidget(ad: _bannerAd!),
+      child: SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      ),
     );
   }
 }
