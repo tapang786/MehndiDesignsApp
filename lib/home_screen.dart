@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _fetchDashboardData();
+    _authService.updateFcmToken(); // Update FCM token on home page load
   }
 
   Future<void> _fetchDashboardData() async {

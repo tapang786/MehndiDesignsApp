@@ -7,6 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 import '../models/dashboard_model.dart';
 import 'notification_service.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class AuthService {
   static const String baseUrl = "https://md-panel.invisofts.in";
@@ -49,6 +50,56 @@ class AuthService {
     }
   }
 
+  Future<void> updateFcmToken() async {
+    try {
+      final fcmToken = await NotificationService.getFCMToken();
+      if (fcmToken == null) return;
+
+      final deviceInfo = DeviceInfoPlugin();
+      String deviceId = "unknown";
+      String deviceType = "unknown";
+
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        deviceId = androidInfo.id;
+        deviceType = "android";
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        deviceId = iosInfo.identifierForVendor ?? "unknown";
+        deviceType = "ios";
+      }
+
+      final url = "$baseUrl/api/update-fcm-token";
+      final token = await getToken();
+      
+      final body = {
+        'fcm_token': fcmToken,
+        'device_id': deviceId,
+        'device_type': deviceType,
+      };
+
+      final headers = {
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+      print("POST Request: $url");
+      print("Payload: $body");
+      if (token != null) print("With Auth Token: $token");
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+    } catch (e) {
+      print("Error updating FCM token: $e");
+    }
+  }
+
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final fcmToken = await NotificationService.getFCMToken();
@@ -76,6 +127,9 @@ class AuthService {
 
         final user = User.fromJson(data['data']['user']);
         userNotifier.value = user;
+        
+        // Update FCM token after login
+        await updateFcmToken();
 
         return {'status': true, 'message': data['message'], 'user': user};
       } else {
@@ -190,6 +244,9 @@ class AuthService {
 
         final user = User.fromJson(data['data']['user']);
         userNotifier.value = user;
+
+        // Update FCM token after social login
+        await updateFcmToken();
 
         return {'status': true, 'message': data['message'], 'user': user};
       } else {
