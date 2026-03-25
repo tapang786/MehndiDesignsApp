@@ -71,7 +71,11 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final googleSignIn = GoogleSignIn();
       print("Ensuring previous session is cleared...");
-      await googleSignIn.signOut(); // Force clear to show account selector
+      try {
+        await googleSignIn.signOut(); // Force clear to show account selector
+      } catch (e) {
+        print("Pre-signout error: $e");
+      }
       print("Attempting to signIn with Google...");
       final user = await googleSignIn.signIn();
       print("Google SignIn user: ${user?.email}");
