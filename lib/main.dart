@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'services/notification_service.dart';
 import 'services/ad_service.dart';
+import 'services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'splash_screen.dart';
 import 'main_screen.dart';
@@ -13,6 +14,9 @@ void main() async {
   await MobileAds.instance.initialize();
   await NotificationService.initialize();
   AdService.loadInterstitialAd();
+
+  // Update FCM token for guest/logged-in user
+  AuthService().updateFcmToken();
 
   final prefs = await SharedPreferences.getInstance();
   final bool showOnboarding = prefs.getBool('show_onboarding') ?? true;
