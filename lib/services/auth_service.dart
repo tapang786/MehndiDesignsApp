@@ -128,8 +128,8 @@ class AuthService {
         final user = User.fromJson(data['data']['user']);
         userNotifier.value = user;
         
-        // Update FCM token after login
-        await updateFcmToken();
+        // Update FCM token after login (Runs in background)
+        updateFcmToken();
 
         return {'status': true, 'message': data['message'], 'user': user};
       } else {
@@ -245,8 +245,8 @@ class AuthService {
         final user = User.fromJson(data['data']['user']);
         userNotifier.value = user;
 
-        // Update FCM token after social login
-        await updateFcmToken();
+        // Update FCM token after social login (Runs in background)
+        updateFcmToken();
 
         return {'status': true, 'message': data['message'], 'user': user};
       } else {
