@@ -69,7 +69,10 @@ class _LoginScreenState extends State<LoginScreen> {
     print("Google Login clicked");
     setState(() => _isLoading = true);
     try {
-      final googleSignIn = GoogleSignIn();
+      final googleSignIn = GoogleSignIn(
+        serverClientId:
+            '560157774098-647tb7k2ouk2b08okbe5a7jrg9glrej9.apps.googleusercontent.com',
+      );
       print("Ensuring previous session is cleared...");
       try {
         await googleSignIn.signOut(); // Force clear to show account selector

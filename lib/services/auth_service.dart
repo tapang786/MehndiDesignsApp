@@ -71,7 +71,7 @@ class AuthService {
 
       final url = "$baseUrl/api/update-fcm-token";
       final token = await getToken();
-      
+
       final body = {
         'fcm_token': fcmToken,
         'device_id': deviceId,
@@ -127,7 +127,7 @@ class AuthService {
 
         final user = User.fromJson(data['data']['user']);
         userNotifier.value = user;
-        
+
         // Update FCM token after login (Runs in background)
         updateFcmToken();
 
@@ -400,7 +400,10 @@ class AuthService {
 
     // Sign out from Google to ensure account selection prompt on next login
     try {
-      final googleSignIn = GoogleSignIn();
+      final googleSignIn = GoogleSignIn(
+        serverClientId:
+            '560157774098-647tb7k2ouk2b08okbe5a7jrg9glrej9.apps.googleusercontent.com',
+      );
       if (await googleSignIn.isSignedIn()) {
         await googleSignIn.signOut();
       }
