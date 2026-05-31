@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'login_screen.dart';
 import 'main_screen.dart';
 import 'widgets/common_app_bar.dart';
@@ -24,26 +25,165 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _errorMessage;
   int _currentBannerIndex = 0;
 
+  // Pagination & Load More States
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadMoreLoading = false;
+  bool _hasMoreDesigns = true;
+  int _nextPage = 2;
+
   @override
   void initState() {
     super.initState();
-    _fetchDashboardData();
+    _loadCachedDataAndFetchFresh();
+    _scrollController.addListener(_onScroll);
     _authService.updateFcmToken(); // Update FCM token on home page load
   }
 
-  Future<void> _fetchDashboardData() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    final data = await _authService.getDashboardData();
-    setState(() {
-      _dashboardData = data;
-      _isLoading = false;
-      if (data == null) {
-        _errorMessage = "Failed to load dashboard data. Please try again.";
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCachedDataAndFetchFresh() async {
+    // 1. Load cached dashboard data first (instantly updates UI)
+    final cachedData = await _authService.getCachedDashboardData();
+    if (cachedData != null) {
+      if (mounted) {
+        setState(() {
+          _dashboardData = cachedData;
+          _isLoading = false;
+          _errorMessage = null;
+        });
       }
+    }
+
+    // 2. Fetch fresh data from API in background
+    try {
+      final freshData = await _authService.getDashboardData();
+      if (freshData != null) {
+        if (mounted) {
+          setState(() {
+            _dashboardData = freshData;
+            _isLoading = false;
+            _errorMessage = null;
+            // Reset pagination state
+            _nextPage = 2;
+            _hasMoreDesigns = true;
+            _isLoadMoreLoading = false;
+          });
+        }
+      } else {
+        // If fetch failed but we have no cached data, show error screen.
+        if (_dashboardData == null) {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+              _errorMessage =
+                  "Failed to load dashboard data. Please try again.";
+            });
+          }
+        }
+      }
+    } catch (e) {
+      if (_dashboardData == null) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = "Failed to load dashboard data. Please try again.";
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> _fetchDashboardData() async {
+    // Direct pull-to-refresh
+    try {
+      final freshData = await _authService.getDashboardData();
+      if (freshData != null) {
+        setState(() {
+          _dashboardData = freshData;
+          _isLoading = false;
+          _errorMessage = null;
+          _nextPage = 2;
+          _hasMoreDesigns = true;
+          _isLoadMoreLoading = false;
+        });
+      } else {
+        if (_dashboardData == null) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = "Failed to load dashboard data. Please try again.";
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Failed to refresh. Showing offline data."),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (_dashboardData == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = "Failed to load dashboard data. Please try again.";
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Error refreshing. Showing offline data."),
+          ),
+        );
+      }
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreDesigns();
+    }
+  }
+
+  Future<void> _loadMoreDesigns() async {
+    if (_isLoadMoreLoading || !_hasMoreDesigns || _dashboardData == null)
+      return;
+
+    setState(() {
+      _isLoadMoreLoading = true;
     });
+
+    print("HomeScreen: Loading more designs page $_nextPage");
+
+    final result = await _authService.getDesignsListPaginated(page: _nextPage);
+
+    if (result != null) {
+      final List<DesignModel> newDesigns = result['designs'];
+      final bool hasNext = result['hasNext'];
+
+      setState(() {
+        if (newDesigns.isNotEmpty) {
+          _dashboardData!.designs.addAll(newDesigns);
+          _nextPage++;
+        }
+        _hasMoreDesigns = hasNext;
+        _isLoadMoreLoading = false;
+      });
+
+      // Update cache
+      await _authService.saveDashboardToCache(_dashboardData!);
+    } else {
+      setState(() {
+        _isLoadMoreLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to load more designs.")),
+        );
+      }
+    }
   }
 
   @override
@@ -83,6 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onRefresh: _fetchDashboardData,
               color: const Color(0xFFE28127),
               child: SingleChildScrollView(
+                controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,31 +290,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.network(
-                          banner.image,
+                        CachedNetworkImage(
+                          imageUrl: banner.image,
                           fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color(0xFFE28127),
-                                ),
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Color(0xFFE28127),
                               ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[200],
-                              child: const Icon(
-                                Icons.broken_image,
-                                color: Colors.grey,
-                                size: 40,
-                              ),
-                            );
-                          },
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey[200],
+                            child: const Icon(
+                              Icons.broken_image,
+                              color: Colors.grey,
+                              size: 40,
+                            ),
+                          ),
                         ),
                         // Subtle overlay for better visual depth
                         Positioned.fill(
@@ -327,10 +463,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               ],
                             ),
                             child: ClipOval(
-                              child: Image.network(
-                                category.image,
+                              child: CachedNetworkImage(
+                                imageUrl: category.image,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey[100],
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFFE28127),
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) =>
                                     const Icon(
                                       Icons.category,
                                       color: Colors.grey,
@@ -445,6 +590,13 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
+        if (_isLoadMoreLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xFFE28127)),
+            ),
+          ),
       ],
     );
   }
@@ -504,6 +656,9 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     } else {
+      // Persist the updated state to dashboard cache
+      await _authService.saveDashboardToCache(_dashboardData!);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -15,6 +15,33 @@ class AuthService {
   static final ValueNotifier<int> notificationCountNotifier =
       ValueNotifier<int>(0);
 
+  static const String _dashboardCacheKey = "cached_dashboard_data";
+
+  Future<DashboardData?> getCachedDashboardData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedStr = prefs.getString(_dashboardCacheKey);
+      if (cachedStr != null) {
+        final data = json.decode(cachedStr);
+        final dashboard = DashboardData.fromJson(data);
+        notificationCountNotifier.value = dashboard.notificationCount;
+        return dashboard;
+      }
+    } catch (e) {
+      print("Error loading cached dashboard: $e");
+    }
+    return null;
+  }
+
+  Future<void> saveDashboardToCache(DashboardData dashboard) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_dashboardCacheKey, json.encode(dashboard.toJson()));
+    } catch (e) {
+      print("Error saving dashboard to cache: $e");
+    }
+  }
+
   Future<DashboardData?> getDashboardData() async {
     try {
       final token = await getToken();
@@ -31,13 +58,16 @@ class AuthService {
       final response = await http.post(Uri.parse(url), headers: headers);
 
       print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == true) {
           final dashboard = DashboardData.fromJson(data['data']);
           notificationCountNotifier.value = dashboard.notificationCount;
+          
+          // Save to cache
+          await saveDashboardToCache(dashboard);
+          
           return dashboard;
         }
       } else {
@@ -685,6 +715,56 @@ class AuthService {
     } catch (e) {
       print("Error fetching designs: $e");
       return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getDesignsListPaginated({
+    int? categoryId,
+    int? subCategoryId,
+    int page = 1,
+  }) async {
+    try {
+      final token = await getToken();
+      final url = "$baseUrl/api/designs-list";
+      final headers = {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      };
+      final body = <String, String>{};
+      if (categoryId != null) body['category_id'] = categoryId.toString();
+      if (subCategoryId != null) {
+        body['sub_category_id'] = subCategoryId.toString();
+      }
+      body['page'] = page.toString();
+
+      print("POST Request: $url");
+      print("Payload: $body");
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      print("Response status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == true) {
+          final designs = (data['data'] as List)
+              .map((e) => DesignModel.fromJson(e))
+              .toList();
+          final hasNext = data['link'] != null && data['link']['next'] == true;
+          return {
+            'designs': designs,
+            'hasNext': hasNext,
+          };
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching designs paginated: $e");
+      return null;
     }
   }
 

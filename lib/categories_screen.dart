@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'widgets/common_app_bar.dart';
 import 'widgets/banner_ad_widget.dart';
 import 'services/auth_service.dart';
@@ -235,10 +236,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 ],
                               ),
                               child: ClipOval(
-                                child: Image.network(
-                                  sub.image,
+                                child: CachedNetworkImage(
+                                  imageUrl: sub.image,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey[100],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFFE28127),
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
                                       const Icon(
                                         Icons.category,
                                         color: Colors.grey,
@@ -447,7 +457,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         child: CircleAvatar(
                           radius: screenWidth > 600 ? 80 : 60,
                           backgroundColor: Colors.white,
-                          backgroundImage: NetworkImage(category.image),
+                          backgroundImage: CachedNetworkImageProvider(category.image),
                         ),
                       ),
                     ),

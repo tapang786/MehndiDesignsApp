@@ -12,6 +12,14 @@ class BannerModel {
       image: json['image']?.toString() ?? "",
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'image': image,
+    };
+  }
 }
 
 class CategoryModel {
@@ -34,6 +42,15 @@ class CategoryModel {
       slug: json['slug']?.toString() ?? "",
       image: json['image']?.toString() ?? "",
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'image': image,
+    };
   }
 }
 
@@ -90,6 +107,16 @@ class DesignModel {
       isFav: json['is_fav'] == true || json['is_fav'].toString() == "1",
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'slug': slug,
+      'image': image,
+      'is_fav': isFav,
+    };
+  }
 }
 
 class DashboardData {
@@ -125,6 +152,15 @@ class DashboardData {
       notificationCount:
           int.tryParse(json['notification_count'].toString()) ?? 0,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'banners': banners.map((e) => e.toJson()).toList(),
+      'categories': categories.map((e) => e.toJson()).toList(),
+      'designs': designs.map((e) => e.toJson()).toList(),
+      'notification_count': notificationCount,
+    };
   }
 }
 
