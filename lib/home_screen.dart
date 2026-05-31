@@ -598,6 +598,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   allDesigns: _dashboardData!.designs,
                   isFavorite: design.isFav,
                   onFavoriteToggle: () => _toggleFavorite(design),
+                  onViewerClosed: () => setState(() {}),
                 );
               },
             );

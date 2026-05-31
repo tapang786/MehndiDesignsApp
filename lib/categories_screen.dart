@@ -399,6 +399,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           allDesigns: _designs,
                           isFavorite: design.isFav,
                           onFavoriteToggle: () => _toggleFavorite(design),
+                          categoryId: _selectedCategory?.id,
+                          subCategoryId: _selectedSubCategory?.id,
+                          onViewerClosed: () => setState(() {}),
                         );
                       },
                     );

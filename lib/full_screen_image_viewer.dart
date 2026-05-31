@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import 'widgets/common_app_bar.dart';
 import 'services/auth_service.dart';
 import 'models/dashboard_model.dart';
@@ -10,11 +12,15 @@ import 'main_screen.dart';
 class FullScreenImageViewer extends StatefulWidget {
   final List<DesignModel> designs;
   final int initialIndex;
+  final int? categoryId; // Added this
+  final int? subCategoryId; // Added this
 
   const FullScreenImageViewer({
     super.key,
     required this.designs,
     required this.initialIndex,
+    this.categoryId, // Added this
+    this.subCategoryId, // Added this
   });
 
   @override
@@ -26,6 +32,10 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   late PageController _pageController;
   late int _currentIndex;
   late bool isFavorite;
+
+  // Pagination & Load More States
+  bool _isLoadMoreLoading = false;
+  bool _hasMoreDesigns = true;
 
   @override
   void initState() {
@@ -46,6 +56,53 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
       _currentIndex = index;
       isFavorite = widget.designs[_currentIndex].isFav;
     });
+
+    if (index >= widget.designs.length - 2) {
+      _loadMoreDesigns();
+    }
+  }
+
+  Future<void> _loadMoreDesigns() async {
+    if (_isLoadMoreLoading || !_hasMoreDesigns) return;
+
+    setState(() {
+      _isLoadMoreLoading = true;
+    });
+
+    final int nextPage = (widget.designs.length / 10).ceil() + 1;
+    print(
+      "FullScreenImageViewer: Loading more designs page $nextPage using categoryId: ${widget.categoryId}, subCategoryId: ${widget.subCategoryId}",
+    );
+
+    try {
+      final result = await _authService.getDesignsListPaginated(
+        categoryId: widget.categoryId,
+        subCategoryId: widget.subCategoryId,
+        page: nextPage,
+      );
+
+      if (result != null) {
+        final List<DesignModel> newDesigns = result['designs'];
+        final bool hasNext = result['hasNext'];
+
+        setState(() {
+          if (newDesigns.isNotEmpty) {
+            widget.designs.addAll(newDesigns);
+          }
+          _hasMoreDesigns = hasNext;
+          _isLoadMoreLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoadMoreLoading = false;
+        });
+      }
+    } catch (e) {
+      print("FullScreenImageViewer: Error loading more: $e");
+      setState(() {
+        _isLoadMoreLoading = false;
+      });
+    }
   }
 
   Future<void> _toggleFavorite() async {
@@ -334,33 +391,28 @@ class _ZoomableImageState extends State<ZoomableImage>
           transformationController: _transformationController,
           minScale: 1.0,
           maxScale: 4.0,
-          child: Image.network(
-            widget.imageUrl,
+          child: CachedNetworkImage(
+            imageUrl: widget.imageUrl,
             fit: BoxFit.contain,
             width: double.infinity,
             height: double.infinity,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                      : null,
-                  color: const Color(0xFFE28127),
-                ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return Center(
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.image, color: Colors.grey),
-                ),
-              );
-            },
+            placeholder: (context, url) => Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                color: Colors.white,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+            errorWidget: (context, url, error) => Center(
+              child: Container(
+                width: 100,
+                height: 100,
+                color: Colors.grey[200],
+                child: const Icon(Icons.image, color: Colors.grey),
+              ),
+            ),
           ),
         ),
       ),

@@ -213,6 +213,7 @@ class _AllDesignsScreenState extends State<AllDesignsScreen> {
                                   allDesigns: _designs,
                                   isFavorite: design.isFav,
                                   onFavoriteToggle: () => _toggleFavorite(design),
+                                  onViewerClosed: () => setState(() {}),
                                 );
                               },
                             );

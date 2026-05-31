@@ -258,6 +258,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               allDesigns: _favoriteDesigns,
               isFavorite: true,
               onFavoriteToggle: () => _toggleFavorite(design),
+              onViewerClosed: () => _fetchFavorites(),
             );
           },
         );

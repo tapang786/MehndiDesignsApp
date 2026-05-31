@@ -15,6 +15,9 @@ class DesignCard extends StatelessWidget {
   final List<DesignModel> allDesigns; // Added this
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
+  final int? categoryId; // Added this
+  final int? subCategoryId; // Added this
+  final VoidCallback? onViewerClosed; // Added this
 
   const DesignCard({
     super.key,
@@ -25,6 +28,9 @@ class DesignCard extends StatelessWidget {
     required this.allDesigns, // Added this
     this.isFavorite = false,
     this.onFavoriteToggle,
+    this.categoryId, // Added this
+    this.subCategoryId, // Added this
+    this.onViewerClosed, // Added this
   });
 
   @override
@@ -53,13 +59,14 @@ class DesignCard extends StatelessWidget {
               builder: (context) => FullScreenImageViewer(
                 designs: allDesigns,
                 initialIndex: index,
+                categoryId: categoryId,
+                subCategoryId: subCategoryId,
               ),
             ),
           );
-          // Viewer might have changed favorite status, so we trigger a potential refresh
-          // by calling the same logic as if the heart icon was clicked if needed,
-          // but since we passed the same list, the state might already be updated
-          // if the list objects are the same.
+          if (onViewerClosed != null) {
+            onViewerClosed!();
+          }
         },
         child: Container(
           decoration: BoxDecoration(
