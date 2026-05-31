@@ -28,10 +28,71 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   bool _isSubLoading = false;
   String? _errorMessage;
 
+  // Pagination & Load More States
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadMoreLoading = false;
+  bool _hasMoreDesigns = true;
+  int _nextPage = 2;
+
   @override
   void initState() {
     super.initState();
     _fetchCategories();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreDesigns();
+    }
+  }
+
+  Future<void> _loadMoreDesigns() async {
+    if (_isLoadMoreLoading || !_hasMoreDesigns || _selectedSubCategory == null)
+      return;
+
+    setState(() {
+      _isLoadMoreLoading = true;
+    });
+
+    print(
+      "CategoriesScreen: Loading more designs page $_nextPage for subcategory ${_selectedSubCategory!.id}",
+    );
+
+    final result = await _authService.getDesignsListPaginated(
+      subCategoryId: _selectedSubCategory!.id,
+      page: _nextPage,
+    );
+
+    if (result != null) {
+      final List<DesignModel> newDesigns = result['designs'];
+      final bool hasNext = result['hasNext'];
+
+      setState(() {
+        if (newDesigns.isNotEmpty) {
+          _designs.addAll(newDesigns);
+          _nextPage++;
+        }
+        _hasMoreDesigns = hasNext;
+        _isLoadMoreLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoadMoreLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to load more designs.")),
+        );
+      }
+    }
   }
 
   Future<void> _fetchCategories() async {
@@ -90,13 +151,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Future<void> _fetchDesigns() async {
     if (_selectedSubCategory == null) return;
 
-    setState(() => _isSubLoading = true);
+    setState(() {
+      _isSubLoading = true;
+      _nextPage = 2;
+      _hasMoreDesigns = true;
+      _isLoadMoreLoading = false;
+    });
     try {
-      final designs = await _authService.getDesignsList(
+      final result = await _authService.getDesignsListPaginated(
         subCategoryId: _selectedSubCategory!.id,
+        page: 1,
       );
       setState(() {
-        _designs = designs;
+        _designs = result?['designs'] ?? [];
+        _hasMoreDesigns = result?['hasNext'] ?? false;
         _isSubLoading = false;
       });
     } catch (e) {
@@ -240,18 +308,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 child: CachedNetworkImage(
                                   imageUrl: sub.image,
                                   fit: BoxFit.cover,
-                                  placeholder: (context, url) => Shimmer.fromColors(
-                                    baseColor: Colors.grey[300]!,
-                                    highlightColor: Colors.grey[100]!,
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
+                                  placeholder: (context, url) =>
+                                      Shimmer.fromColors(
+                                        baseColor: Colors.grey[300]!,
+                                        highlightColor: Colors.grey[100]!,
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                        ),
                                       ),
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
-                                  ),
                                   errorWidget: (context, url, error) =>
                                       const Icon(
                                         Icons.category,
@@ -311,6 +380,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     if (screenWidth > 900) crossAxisCount = 4;
 
                     return GridView.builder(
+                      controller: _scrollController,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
@@ -335,6 +405,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   },
                 ),
         ),
+        if (_isLoadMoreLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xFFE28127)),
+            ),
+          ),
         const BannerAdWidget(),
       ],
     );
@@ -478,7 +555,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                             errorWidget: (context, url, error) => Container(
                               color: Colors.grey[200],
-                              child: const Icon(Icons.category, color: Colors.grey),
+                              child: const Icon(
+                                Icons.category,
+                                color: Colors.grey,
+                              ),
                             ),
                           ),
                         ),

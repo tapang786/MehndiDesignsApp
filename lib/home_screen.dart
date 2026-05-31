@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'login_screen.dart';
 import 'main_screen.dart';
+import 'all_designs_screen.dart';
 import 'widgets/common_app_bar.dart';
 import 'widgets/native_ad_widget.dart';
 import 'widgets/design_card.dart';
@@ -467,18 +468,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: CachedNetworkImage(
                                 imageUrl: category.image,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
-                                      shape: BoxShape.circle,
+                                placeholder: (context, url) =>
+                                    Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                      ),
                                     ),
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                  ),
-                                ),
                                 errorWidget: (context, url, error) =>
                                     const Icon(
                                       Icons.category,
@@ -547,7 +549,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AllDesignsScreen(),
+                    ),
+                  );
+                },
                 child: Text(
                   'View All',
                   style: GoogleFonts.outfit(
