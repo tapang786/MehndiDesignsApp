@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import 'login_screen.dart';
 import 'main_screen.dart';
 import 'widgets/common_app_bar.dart';
@@ -293,13 +294,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         CachedNetworkImage(
                           imageUrl: banner.image,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: Colors.grey[200],
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFFE28127),
-                              ),
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              color: Colors.white,
+                              width: double.infinity,
+                              height: double.infinity,
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
@@ -466,13 +467,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: CachedNetworkImage(
                                 imageUrl: category.image,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: Colors.grey[100],
-                                  child: const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Color(0xFFE28127),
+                                placeholder: (context, url) => Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
                                     ),
+                                    width: double.infinity,
+                                    height: double.infinity,
                                   ),
                                 ),
                                 errorWidget: (context, url, error) =>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import 'widgets/common_app_bar.dart';
 import 'widgets/banner_ad_widget.dart';
 import 'services/auth_service.dart';
@@ -239,13 +240,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 child: CachedNetworkImage(
                                   imageUrl: sub.image,
                                   fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    color: Colors.grey[100],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Color(0xFFE28127),
+                                  placeholder: (context, url) => Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
                                       ),
+                                      width: double.infinity,
+                                      height: double.infinity,
                                     ),
                                   ),
                                   errorWidget: (context, url, error) =>
@@ -454,10 +458,29 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             ),
                           ],
                         ),
-                        child: CircleAvatar(
-                          radius: screenWidth > 600 ? 80 : 60,
-                          backgroundColor: Colors.white,
-                          backgroundImage: CachedNetworkImageProvider(category.image),
+                        child: ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: category.image,
+                            width: screenWidth > 600 ? 160 : 120,
+                            height: screenWidth > 600 ? 160 : 120,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.category, color: Colors.grey),
+                            ),
+                          ),
                         ),
                       ),
                     ),
